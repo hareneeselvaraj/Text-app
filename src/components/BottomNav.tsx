@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, MessageCircle, Plus, Camera, BookOpen } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
@@ -26,40 +26,42 @@ const BottomNav = () => {
 
   return (
     <>
-      {showActions && (
-        <motion.div
-          className="fixed inset-0 z-40 bg-foreground/20"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={() => setShowActions(false)}
-        >
+      <AnimatePresence>
+        {showActions && (
           <motion.div
-            className="absolute bottom-24 left-1/2 -translate-x-1/2 flex gap-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            className="absolute inset-0 z-40 bg-foreground/20"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowActions(false)}
           >
-            {quickActions.map((action, i) => (
-              <motion.button
-                key={action.label}
-                className="glass-card flex flex-col items-center gap-1 rounded-2xl px-4 py-3"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => { setShowActions(false); navigate(action.path); }}
-              >
-                <span className="text-2xl">{action.emoji}</span>
-                <span className="text-xs text-foreground font-medium">{action.label}</span>
-              </motion.button>
-            ))}
+            <motion.div
+              className="absolute bottom-24 left-1/2 -translate-x-1/2 flex gap-3 px-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              {quickActions.map((action, i) => (
+                <motion.button
+                  key={action.label}
+                  className="glass-card flex flex-col items-center gap-1 rounded-2xl px-3 py-3 min-w-[68px]"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => { setShowActions(false); navigate(action.path); }}
+                >
+                  <span className="text-xl">{action.emoji}</span>
+                  <span className="text-[10px] text-foreground font-medium leading-tight">{action.label}</span>
+                </motion.button>
+              ))}
+            </motion.div>
           </motion.div>
-        </motion.div>
-      )}
+        )}
+      </AnimatePresence>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50 glass-nav border-t border-border/20">
+      <nav className="absolute bottom-0 left-0 right-0 z-50 glass-nav border-t border-border/20">
         <div className="dark:border-t dark:border-primary/30" />
-        <div className="flex items-center justify-around px-2 pt-2 pb-[max(env(safe-area-inset-bottom,8px),8px)] max-w-lg mx-auto">
+        <div className="flex items-center justify-around px-1 pt-2 pb-[max(env(safe-area-inset-bottom,8px),8px)]">
           {navItems.map((item) => {
             const isAdd = item.path === 'add';
             const isActive = !isAdd && location.pathname === item.path;
@@ -69,7 +71,7 @@ const BottomNav = () => {
               return (
                 <motion.button
                   key="add"
-                  className="relative -mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg glow-primary"
+                  className="relative -mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg glow-primary shrink-0"
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setShowActions(!showActions)}
                 >
@@ -82,7 +84,7 @@ const BottomNav = () => {
               <motion.button
                 key={item.path}
                 className={cn(
-                  'flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors',
+                  'flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-colors min-w-[52px]',
                   isActive ? 'text-primary' : 'text-muted-foreground'
                 )}
                 whileTap={{ scale: 0.9 }}
