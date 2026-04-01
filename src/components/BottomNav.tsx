@@ -36,14 +36,14 @@ const BottomNav = () => {
             onClick={() => setShowActions(false)}
           >
             <motion.div
-              className="absolute bottom-28 left-1/2 -translate-x-1/2 flex gap-3 px-4"
+              className="absolute bottom-28 left-0 right-0 flex justify-center gap-2 px-5"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
               {quickActions.map((action, i) => (
                 <motion.button
                   key={action.label}
-                  className="glass-card flex flex-col items-center gap-1 rounded-2xl px-3 py-3 min-w-[68px]"
+                  className="glass-card flex flex-col items-center gap-1.5 rounded-2xl px-2.5 py-3 flex-1 max-w-[80px]"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
@@ -51,7 +51,7 @@ const BottomNav = () => {
                   onClick={() => { setShowActions(false); navigate(action.path); }}
                 >
                   <span className="text-xl">{action.emoji}</span>
-                  <span className="text-[10px] text-foreground font-medium leading-tight">{action.label}</span>
+                  <span className="text-[10px] text-foreground font-medium leading-tight text-center">{action.label}</span>
                 </motion.button>
               ))}
             </motion.div>
