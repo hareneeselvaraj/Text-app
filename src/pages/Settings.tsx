@@ -86,16 +86,20 @@ const Settings = () => {
               </div>
             ))}
           </div>
-          <div className="mt-3 flex gap-2">
-            <input className="flex-1 rounded-lg bg-muted/50 px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/50 outline-none" placeholder="Date name" value={newDateName} onChange={e => setNewDateName(e.target.value)} />
-            <input type="date" className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-foreground outline-none" value={newDate} onChange={e => setNewDate(e.target.value)} />
-            <motion.button
-              className="rounded-lg bg-primary/10 px-3 text-primary"
-              whileTap={{ scale: 0.9 }}
-              onClick={() => { if (newDateName && newDate) { addImportantDate({ name: newDateName, date: newDate, notify: true }); setNewDateName(''); setNewDate(''); } }}
-            >
-              <Plus className="h-4 w-4" />
-            </motion.button>
+          <div className="mt-3 space-y-2">
+            <div className="flex gap-2">
+              <input className="flex-1 min-w-0 rounded-lg bg-muted/50 px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none" placeholder="Date name" value={newDateName} onChange={e => setNewDateName(e.target.value)} />
+            </div>
+            <div className="flex gap-2">
+              <input type="date" className="flex-1 min-w-0 rounded-lg bg-muted/50 px-3 py-2.5 text-sm text-foreground outline-none" value={newDate} onChange={e => setNewDate(e.target.value)} />
+              <motion.button
+                className="rounded-lg bg-primary/10 px-4 text-primary shrink-0 active:scale-90 transition-transform"
+                whileTap={{ scale: 0.9 }}
+                onClick={() => { if (newDateName && newDate) { addImportantDate({ name: newDateName, date: newDate, notify: true }); setNewDateName(''); setNewDate(''); } }}
+              >
+                <Plus className="h-4 w-4" />
+              </motion.button>
+            </div>
           </div>
         </GlassCard>
 

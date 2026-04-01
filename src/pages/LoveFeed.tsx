@@ -46,7 +46,7 @@ const LoveFeed = () => {
         {/* Header */}
         <motion.div className="flex items-center justify-between mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <div>
-            <h1 className="text-2xl font-display font-bold text-foreground">
+            <h1 className="text-xl sm:text-2xl font-display font-bold text-foreground leading-tight">
               {getGreeting()}, {userName || 'Love'} 💕
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">Your nest awaits</p>

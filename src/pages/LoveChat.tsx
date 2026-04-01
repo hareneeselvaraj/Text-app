@@ -130,11 +130,11 @@ const LoveChat = () => {
       </div>
 
       {/* Input */}
-      <div className="px-4 pb-4 pt-2">
+      <div className="px-4 pt-2 pb-[max(env(safe-area-inset-bottom,16px),16px)] shrink-0">
         <div className="flex items-center gap-2">
-          <div className="flex-1 glass-card rounded-full px-4 py-2.5 flex items-center">
+          <div className="flex-1 glass-card rounded-full px-4 py-3 flex items-center">
             <input
-              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 outline-none"
+              className="flex-1 bg-transparent text-[16px] text-foreground placeholder:text-muted-foreground/50 outline-none"
               placeholder="Type a love note..."
               value={input}
               onChange={e => setInput(e.target.value)}
@@ -142,7 +142,7 @@ const LoveChat = () => {
             />
           </div>
           <motion.button
-            className="h-11 w-11 rounded-full bg-primary flex items-center justify-center glow-primary shrink-0"
+            className="h-12 w-12 rounded-full bg-primary flex items-center justify-center glow-primary shrink-0 active:scale-90 transition-transform"
             whileTap={{ scale: 0.9 }}
             onClick={() => sendMessage(input)}
           >
