@@ -39,10 +39,10 @@ const LoveFeed = () => {
   const lastMemory = memories[0];
 
   return (
-    <div className="min-h-screen bg-app pb-24 relative">
+    <div className="min-h-[100dvh] bg-app pb-28 relative overflow-x-hidden">
       <HeartParticles />
 
-      <div className="px-5 pt-14 max-w-lg mx-auto relative z-10">
+      <div className="px-4 safe-top pt-3 max-w-lg mx-auto relative z-10">
         {/* Header */}
         <motion.div className="flex items-center justify-between mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <div>
