@@ -36,7 +36,7 @@ const BottomNav = () => {
             onClick={() => setShowActions(false)}
           >
             <motion.div
-              className="absolute bottom-24 left-1/2 -translate-x-1/2 flex gap-3 px-4"
+              className="absolute bottom-28 left-1/2 -translate-x-1/2 flex gap-3 px-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
@@ -59,46 +59,71 @@ const BottomNav = () => {
         )}
       </AnimatePresence>
 
-      <nav className="absolute bottom-0 left-0 right-0 z-50 glass-nav border-t border-border/20">
-        <div className="dark:border-t dark:border-primary/30" />
-        <div className="flex items-center justify-around px-1 pt-2 pb-[max(env(safe-area-inset-bottom,8px),8px)]">
-          {navItems.map((item) => {
-            const isAdd = item.path === 'add';
-            const isActive = !isAdd && location.pathname === item.path;
-            const Icon = item.icon;
-
-            if (isAdd) {
-              return (
-                <motion.button
-                  key="add"
-                  className="relative -mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg glow-primary shrink-0"
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setShowActions(!showActions)}
-                >
-                  <Plus className="h-7 w-7 text-primary-foreground" />
-                </motion.button>
-              );
-            }
-
-            return (
-              <motion.button
-                key={item.path}
-                className={cn(
-                  'flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-colors min-w-[52px]',
-                  isActive ? 'text-primary' : 'text-muted-foreground'
-                )}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => navigate(item.path)}
-              >
-                <div className={cn('relative p-1', isActive && 'glow-primary rounded-lg')}>
-                  <Icon className="h-5 w-5" fill={isActive ? 'currentColor' : 'none'} />
-                </div>
-                <span className="text-[10px] font-medium">{item.label}</span>
-              </motion.button>
-            );
-          })}
+      <div className="absolute bottom-0 left-0 right-0 z-50">
+        {/* Center floating button */}
+        <div className="flex justify-center relative z-10">
+          <motion.button
+            className="flex h-[58px] w-[58px] -mb-[29px] items-center justify-center rounded-full bg-accent shadow-xl glow-accent"
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setShowActions(!showActions)}
+          >
+            <motion.div
+              animate={{ rotate: showActions ? 45 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Plus className="h-7 w-7 text-accent-foreground" strokeWidth={2.5} />
+            </motion.div>
+          </motion.button>
         </div>
-      </nav>
+
+        {/* Nav bar with notch */}
+        <div className="relative">
+          {/* SVG notch cutout background */}
+          <svg
+            className="absolute top-0 left-0 w-full"
+            height="20"
+            viewBox="0 0 430 20"
+            preserveAspectRatio="none"
+            fill="none"
+          >
+            <path
+              d="M0 20 L0 0 L172 0 C172 0 178 0 184 6 C190 14 198 20 215 20 C232 20 240 14 246 6 C252 0 258 0 258 0 L430 0 L430 20 Z"
+              className="fill-[hsl(var(--nav-bg)/var(--nav-bg-opacity))]"
+            />
+          </svg>
+
+          <nav className="glass-nav pt-3 border-t border-border/10">
+            <div className="dark:border-t dark:border-primary/20 absolute top-0 left-0 right-0" />
+            <div className="flex items-end justify-around px-3 pb-[max(env(safe-area-inset-bottom,8px),8px)]">
+              {navItems.map((item) => {
+                if (item.path === 'add') {
+                  return <div key="add" className="w-[58px] shrink-0" />;
+                }
+
+                const isActive = location.pathname === item.path;
+                const Icon = item.icon;
+
+                return (
+                  <motion.button
+                    key={item.path}
+                    className={cn(
+                      'flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-colors min-w-[52px]',
+                      isActive ? 'text-accent' : 'text-muted-foreground'
+                    )}
+                    whileTap={{ scale: 0.85 }}
+                    onClick={() => navigate(item.path)}
+                  >
+                    <div className={cn('relative p-1', isActive && 'drop-shadow-[0_0_6px_hsl(var(--accent)/0.5)]')}>
+                      <Icon className="h-[22px] w-[22px]" fill={isActive ? 'currentColor' : 'none'} strokeWidth={isActive ? 1.5 : 2} />
+                    </div>
+                    <span className={cn('text-[10px] font-medium', isActive && 'font-semibold')}>{item.label}</span>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </nav>
+        </div>
+      </div>
     </>
   );
 };
