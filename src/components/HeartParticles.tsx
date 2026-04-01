@@ -7,7 +7,7 @@ const hearts = Array.from({ length: 5 }, (_, i) => ({
 }));
 
 const HeartParticles = () => (
-  <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+  <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
     {hearts.map(h => (
       <div
         key={h.id}
