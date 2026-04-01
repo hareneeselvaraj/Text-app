@@ -24,7 +24,7 @@ const MoodSelector = () => {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-app px-4 safe-top pt-3 pb-10 max-w-lg mx-auto overflow-x-hidden">
+    <div className="min-h-[100dvh] bg-app px-4 safe-top pt-3 pb-10 overflow-x-hidden">
       <motion.div className="flex items-center gap-3 mb-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <button onClick={() => navigate('/home')}><ArrowLeft className="h-5 w-5 text-foreground" /></button>
         <h1 className="text-2xl font-display font-bold text-foreground">How are you feeling?</h1>

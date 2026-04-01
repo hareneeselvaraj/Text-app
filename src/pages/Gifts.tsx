@@ -41,7 +41,7 @@ const Gifts = () => {
 
   return (
     <div className="min-h-[100dvh] bg-app pb-28 overflow-x-hidden">
-      <div className="px-4 safe-top pt-3 max-w-lg mx-auto">
+      <div className="px-4 safe-top pt-3">
         <motion.div className="flex items-center gap-3 mb-1" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <button onClick={() => navigate('/settings')}><ArrowLeft className="h-5 w-5 text-foreground" /></button>
           <h1 className="text-2xl font-display font-bold text-foreground">Secret Gift List 🎁</h1>
