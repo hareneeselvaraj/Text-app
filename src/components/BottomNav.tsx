@@ -57,9 +57,9 @@ const BottomNav = () => {
         </motion.div>
       )}
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50 glass-nav border-t border-border/20 safe-area-bottom">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 glass-nav border-t border-border/20">
         <div className="dark:border-t dark:border-primary/30" />
-        <div className="flex items-center justify-around px-2 py-2 max-w-lg mx-auto">
+        <div className="flex items-center justify-around px-2 pt-2 pb-[max(env(safe-area-inset-bottom,8px),8px)] max-w-lg mx-auto">
           {navItems.map((item) => {
             const isAdd = item.path === 'add';
             const isActive = !isAdd && location.pathname === item.path;

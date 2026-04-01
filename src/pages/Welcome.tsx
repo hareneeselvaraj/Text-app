@@ -7,7 +7,7 @@ const Welcome = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-app flex flex-col items-center justify-center px-6 relative overflow-hidden">
+    <div className="min-h-[100dvh] bg-app flex flex-col items-center justify-center px-6 relative overflow-hidden">
       <HeartParticles />
 
       <motion.div

@@ -49,18 +49,18 @@ const LoveChat = () => {
   };
 
   return (
-    <div className="h-screen bg-app flex flex-col">
+    <div className="h-[100dvh] bg-app flex flex-col overflow-hidden">
       {/* Top Bar */}
-      <div className="glass-nav px-4 py-3 flex items-center gap-3 border-b border-border/20 pt-12">
-        <button onClick={() => navigate('/home')}>
+      <div className="glass-nav px-4 py-3 flex items-center gap-3 border-b border-border/20 safe-top shrink-0">
+        <button onClick={() => navigate('/home')} className="p-1 -ml-1 active:scale-90 transition-transform">
           <ArrowLeft className="h-5 w-5 text-foreground" />
         </button>
-        <div className="h-9 w-9 rounded-full bg-accent/10 flex items-center justify-center text-lg relative">
+        <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center text-xl relative shrink-0">
           {avatarEmojis[partnerAvatar]}
           <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-background" />
         </div>
-        <div>
-          <p className="text-sm font-semibold text-foreground">{partnerName}</p>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-foreground truncate">{partnerName}</p>
           <p className="text-[10px] text-emerald-500">Online</p>
         </div>
       </div>
@@ -130,11 +130,11 @@ const LoveChat = () => {
       </div>
 
       {/* Input */}
-      <div className="px-4 pb-4 pt-2">
+      <div className="px-4 pt-2 pb-[max(env(safe-area-inset-bottom,16px),16px)] shrink-0">
         <div className="flex items-center gap-2">
-          <div className="flex-1 glass-card rounded-full px-4 py-2.5 flex items-center">
+          <div className="flex-1 glass-card rounded-full px-4 py-3 flex items-center">
             <input
-              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 outline-none"
+              className="flex-1 bg-transparent text-[16px] text-foreground placeholder:text-muted-foreground/50 outline-none"
               placeholder="Type a love note..."
               value={input}
               onChange={e => setInput(e.target.value)}
@@ -142,7 +142,7 @@ const LoveChat = () => {
             />
           </div>
           <motion.button
-            className="h-11 w-11 rounded-full bg-primary flex items-center justify-center glow-primary shrink-0"
+            className="h-12 w-12 rounded-full bg-primary flex items-center justify-center glow-primary shrink-0 active:scale-90 transition-transform"
             whileTap={{ scale: 0.9 }}
             onClick={() => sendMessage(input)}
           >

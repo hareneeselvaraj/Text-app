@@ -30,8 +30,8 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-app flex items-center justify-center px-5 py-10">
-      <GlassCard className="w-full max-w-sm p-6">
+    <div className="min-h-[100dvh] bg-app flex items-center justify-center px-5 py-10">
+      <GlassCard className="w-full max-w-sm p-5 sm:p-6">
         {/* Tab Switcher */}
         <div className="flex rounded-xl bg-muted/50 p-1 mb-6">
           {(['create', 'join'] as const).map(t => (
