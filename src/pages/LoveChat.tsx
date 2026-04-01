@@ -49,18 +49,18 @@ const LoveChat = () => {
   };
 
   return (
-    <div className="h-screen bg-app flex flex-col">
+    <div className="h-[100dvh] bg-app flex flex-col overflow-hidden">
       {/* Top Bar */}
-      <div className="glass-nav px-4 py-3 flex items-center gap-3 border-b border-border/20 pt-12">
-        <button onClick={() => navigate('/home')}>
+      <div className="glass-nav px-4 py-3 flex items-center gap-3 border-b border-border/20 safe-top shrink-0">
+        <button onClick={() => navigate('/home')} className="p-1 -ml-1 active:scale-90 transition-transform">
           <ArrowLeft className="h-5 w-5 text-foreground" />
         </button>
-        <div className="h-9 w-9 rounded-full bg-accent/10 flex items-center justify-center text-lg relative">
+        <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center text-xl relative shrink-0">
           {avatarEmojis[partnerAvatar]}
           <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-background" />
         </div>
-        <div>
-          <p className="text-sm font-semibold text-foreground">{partnerName}</p>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-foreground truncate">{partnerName}</p>
           <p className="text-[10px] text-emerald-500">Online</p>
         </div>
       </div>
