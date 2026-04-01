@@ -64,9 +64,9 @@ const Memories = () => {
       <FloatingAddButton onClick={() => setShowModal(true)} />
 
       {showModal && (
-        <motion.div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20" initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={() => setShowModal(false)}>
+        <motion.div className="absolute inset-0 z-50 flex items-end justify-center bg-foreground/20" initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={() => setShowModal(false)}>
           <motion.div
-            className="glass-card w-full max-w-lg rounded-t-3xl p-6 space-y-4"
+            className="glass-card w-full rounded-t-3xl p-5 space-y-4"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             onClick={e => e.stopPropagation()}

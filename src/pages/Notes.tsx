@@ -81,8 +81,8 @@ const Notes = () => {
       <FloatingAddButton onClick={() => setShowModal(true)} />
 
       {showModal && (
-        <motion.div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20" initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={() => setShowModal(false)}>
-          <motion.div className="glass-card w-full max-w-lg rounded-t-3xl p-6 space-y-4" initial={{ y: '100%' }} animate={{ y: 0 }} onClick={e => e.stopPropagation()}>
+        <motion.div className="absolute inset-0 z-50 flex items-end justify-center bg-foreground/20" initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={() => setShowModal(false)}>
+          <motion.div className="glass-card w-full rounded-t-3xl p-5 space-y-4" initial={{ y: '100%' }} animate={{ y: 0 }} onClick={e => e.stopPropagation()}>
             <h2 className="font-display text-lg font-bold text-foreground">New Note</h2>
             <input className="w-full rounded-xl bg-muted/50 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none" placeholder="Title" value={title} onChange={e => setTitle(e.target.value)} />
             <div className="flex gap-2 flex-wrap">
