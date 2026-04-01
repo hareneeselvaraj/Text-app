@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AppProvider } from "@/contexts/AppContext";
+import MobileShell from "@/components/MobileShell";
 import Welcome from "./pages/Welcome";
 import Auth from "./pages/Auth";
 import LoveFeed from "./pages/LoveFeed";
@@ -24,18 +25,20 @@ const App = () => (
         <TooltipProvider>
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Welcome />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/home" element={<LoveFeed />} />
-              <Route path="/chat" element={<LoveChat />} />
-              <Route path="/memories" element={<Memories />} />
-              <Route path="/notes" element={<Notes />} />
-              <Route path="/gifts" element={<Gifts />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/mood" element={<MoodSelector />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <MobileShell>
+              <Routes>
+                <Route path="/" element={<Welcome />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/home" element={<LoveFeed />} />
+                <Route path="/chat" element={<LoveChat />} />
+                <Route path="/memories" element={<Memories />} />
+                <Route path="/notes" element={<Notes />} />
+                <Route path="/gifts" element={<Gifts />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/mood" element={<MoodSelector />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </MobileShell>
           </BrowserRouter>
         </TooltipProvider>
       </AppProvider>
