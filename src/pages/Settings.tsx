@@ -19,7 +19,7 @@ const Settings = () => {
   const handleLogout = () => { logout(); navigate('/'); };
 
   return (
-    <div className="min-h-[100dvh] bg-app px-4 safe-top pt-3 pb-10 max-w-lg mx-auto overflow-x-hidden">
+    <div className="min-h-[100dvh] bg-app px-4 safe-top pt-3 pb-10 overflow-x-hidden">
       <motion.div className="flex items-center gap-3 mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <button onClick={() => navigate('/home')}><ArrowLeft className="h-5 w-5 text-foreground" /></button>
         <h1 className="text-2xl font-display font-bold text-foreground">Settings ⚙️</h1>
@@ -130,7 +130,7 @@ const Settings = () => {
       </div>
 
       {showLeave && (
-        <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/20 px-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={() => setShowLeave(false)}>
+        <motion.div className="absolute inset-0 z-50 flex items-center justify-center bg-foreground/20 px-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={() => setShowLeave(false)}>
           <GlassCard className="max-w-sm w-full text-center p-6" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
             <p className="text-lg font-display font-bold text-foreground mb-2">Leave Nest? 💔</p>
             <p className="text-sm text-muted-foreground mb-6">This will remove you from this nest. Your memories will be saved.</p>

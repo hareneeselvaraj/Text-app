@@ -24,7 +24,7 @@ const Memories = () => {
 
   return (
     <div className="min-h-[100dvh] bg-app pb-28 overflow-x-hidden">
-      <div className="px-4 safe-top pt-3 max-w-lg mx-auto">
+      <div className="px-4 safe-top pt-3">
         <motion.div className="flex items-center gap-3 mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <button onClick={() => navigate('/home')}><ArrowLeft className="h-5 w-5 text-foreground" /></button>
           <h1 className="text-2xl font-display font-bold text-foreground">Memories 📸</h1>
@@ -64,9 +64,9 @@ const Memories = () => {
       <FloatingAddButton onClick={() => setShowModal(true)} />
 
       {showModal && (
-        <motion.div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20" initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={() => setShowModal(false)}>
+        <motion.div className="absolute inset-0 z-50 flex items-end justify-center bg-foreground/20" initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={() => setShowModal(false)}>
           <motion.div
-            className="glass-card w-full max-w-lg rounded-t-3xl p-6 space-y-4"
+            className="glass-card w-full rounded-t-3xl p-5 space-y-4"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             onClick={e => e.stopPropagation()}

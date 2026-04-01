@@ -7,7 +7,7 @@ interface FloatingAddButtonProps {
 
 const FloatingAddButton = ({ onClick }: FloatingAddButtonProps) => (
   <motion.button
-    className="fixed bottom-24 right-5 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg glow-primary"
+    className="absolute bottom-24 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg glow-primary"
     whileTap={{ scale: 0.9 }}
     whileHover={{ scale: 1.05 }}
     onClick={onClick}
