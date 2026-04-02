@@ -1,12 +1,11 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, MessageCircle, Heart, Camera, BookOpen } from 'lucide-react';
+import { Home, MessageCircle, Camera, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { path: '/home', icon: Home, label: 'Home' },
   { path: '/chat', icon: MessageCircle, label: 'Chat' },
-  { path: '/mood', icon: Heart, label: 'Liked' },
   { path: '/memories', icon: Camera, label: 'Memories' },
   { path: '/notes', icon: BookOpen, label: 'Notes' },
 ];
