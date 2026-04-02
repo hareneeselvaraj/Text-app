@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, MessageCircle, Heart, Camera, BookOpen } from 'lucide-react';
+import { Home, MessageCircle, Camera, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
