@@ -12,46 +12,83 @@ const navItems = [
   { path: '/notes', icon: BookOpen, label: 'Notes' },
 ];
 
+const quickActions = [
+  { emoji: '💕', label: 'Miss You', path: '/chat' },
+  { emoji: '📸', label: 'Memory', path: '/memories' },
+  { emoji: '📝', label: 'Note', path: '/notes' },
+  { emoji: '😊', label: 'Mood', path: '/mood' },
+];
+
 const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [showActions, setShowActions] = useState(false);
 
-  const quickActions = [
-    { emoji: '💕', label: 'Miss You', path: '/chat' },
-    { emoji: '📸', label: 'Memory', path: '/memories' },
-    { emoji: '📝', label: 'Note', path: '/notes' },
-    { emoji: '😊', label: 'Mood', path: '/mood' },
-  ];
-
   return (
     <>
+      {/* Quick Actions Overlay */}
       <AnimatePresence>
         {showActions && (
           <motion.div
-            className="absolute inset-0 z-40 bg-foreground/20"
+            className="absolute inset-0 z-40"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowActions(false)}
           >
+            {/* Blurred backdrop */}
             <motion.div
-              className="absolute bottom-28 left-0 right-0 flex justify-center gap-2 px-5"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              className="absolute inset-0 bg-background/60 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+
+            {/* Action cards */}
+            <motion.div
+              className="absolute bottom-32 left-0 right-0 flex justify-center gap-3 px-6"
+              initial={{ opacity: 0, y: 30, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.95 }}
+              transition={{ type: 'spring', damping: 22, stiffness: 300 }}
             >
               {quickActions.map((action, i) => (
                 <motion.button
                   key={action.label}
-                  className="glass-card flex flex-col items-center gap-1.5 rounded-2xl px-2.5 py-3 flex-1 max-w-[80px]"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => { setShowActions(false); navigate(action.path); }}
+                  className="glass-card flex flex-col items-center gap-2 rounded-2xl px-3 py-4 flex-1 max-w-[85px] border border-border/30 hover:border-accent/40 transition-colors"
+                  initial={{ opacity: 0, y: 30, scale: 0.8 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 15, scale: 0.9 }}
+                  transition={{
+                    type: 'spring',
+                    damping: 20,
+                    stiffness: 350,
+                    delay: i * 0.06,
+                  }}
+                  whileHover={{ scale: 1.08, y: -4 }}
+                  whileTap={{ scale: 0.92 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowActions(false);
+                    navigate(action.path);
+                  }}
                 >
-                  <span className="text-xl">{action.emoji}</span>
-                  <span className="text-[10px] text-foreground font-medium leading-tight text-center">{action.label}</span>
+                  <motion.span
+                    className="text-2xl"
+                    initial={{ scale: 0, rotate: -30 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{
+                      type: 'spring',
+                      damping: 12,
+                      stiffness: 400,
+                      delay: i * 0.06 + 0.1,
+                    }}
+                  >
+                    {action.emoji}
+                  </motion.span>
+                  <span className="text-[10px] text-foreground/80 font-medium leading-tight text-center">
+                    {action.label}
+                  </span>
                 </motion.button>
               ))}
             </motion.div>
@@ -59,26 +96,34 @@ const BottomNav = () => {
         )}
       </AnimatePresence>
 
+      {/* Bottom Nav */}
       <div className="absolute bottom-0 left-0 right-0 z-50">
         {/* Center floating button */}
         <div className="flex justify-center relative z-10">
           <motion.button
-            className="flex h-[58px] w-[58px] -mb-[29px] items-center justify-center rounded-full bg-accent shadow-xl glow-accent"
-            whileTap={{ scale: 0.9 }}
+            className={cn(
+              'flex h-[56px] w-[56px] -mb-[28px] items-center justify-center rounded-full shadow-xl transition-shadow duration-300',
+              showActions
+                ? 'bg-accent glow-accent'
+                : 'bg-accent glow-accent'
+            )}
+            whileTap={{ scale: 0.88 }}
+            whileHover={{ scale: 1.08 }}
+            animate={showActions ? { rotate: 0 } : { rotate: 0 }}
             onClick={() => setShowActions(!showActions)}
           >
             <motion.div
               animate={{ rotate: showActions ? 45 : 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ type: 'spring', damping: 15, stiffness: 300 }}
             >
               <Plus className="h-7 w-7 text-accent-foreground" strokeWidth={2.5} />
             </motion.div>
           </motion.button>
         </div>
 
-        {/* Nav bar with notch */}
+        {/* Nav bar */}
         <div className="relative">
-          {/* SVG notch cutout background */}
+          {/* SVG notch cutout */}
           <svg
             className="absolute top-0 left-0 w-full"
             height="20"
@@ -93,11 +138,10 @@ const BottomNav = () => {
           </svg>
 
           <nav className="glass-nav pt-3 border-t border-border/10">
-            <div className="dark:border-t dark:border-primary/20 absolute top-0 left-0 right-0" />
-            <div className="flex items-end justify-around px-3 pb-[max(env(safe-area-inset-bottom,8px),8px)]">
+            <div className="flex items-end justify-around px-2 pb-[max(env(safe-area-inset-bottom,8px),8px)]">
               {navItems.map((item) => {
                 if (item.path === 'add') {
-                  return <div key="add" className="w-[58px] shrink-0" />;
+                  return <div key="add" className="w-[56px] shrink-0" />;
                 }
 
                 const isActive = location.pathname === item.path;
@@ -107,16 +151,56 @@ const BottomNav = () => {
                   <motion.button
                     key={item.path}
                     className={cn(
-                      'flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-colors min-w-[52px]',
+                      'relative flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors min-w-[56px]',
                       isActive ? 'text-accent' : 'text-muted-foreground'
                     )}
-                    whileTap={{ scale: 0.85 }}
+                    whileTap={{ scale: 0.82 }}
                     onClick={() => navigate(item.path)}
                   >
-                    <div className={cn('relative p-1', isActive && 'drop-shadow-[0_0_6px_hsl(var(--accent)/0.5)]')}>
-                      <Icon className="h-[22px] w-[22px]" fill={isActive ? 'currentColor' : 'none'} strokeWidth={isActive ? 1.5 : 2} />
-                    </div>
-                    <span className={cn('text-[10px] font-medium', isActive && 'font-semibold')}>{item.label}</span>
+                    {/* Active background glow */}
+                    <AnimatePresence>
+                      {isActive && (
+                        <motion.div
+                          className="absolute inset-0 rounded-xl bg-accent/10"
+                          layoutId="nav-active-bg"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                        />
+                      )}
+                    </AnimatePresence>
+
+                    <motion.div
+                      className="relative p-0.5"
+                      animate={isActive ? { y: -2 } : { y: 0 }}
+                      transition={{ type: 'spring', damping: 20, stiffness: 400 }}
+                    >
+                      <Icon
+                        className="h-[22px] w-[22px]"
+                        fill={isActive ? 'currentColor' : 'none'}
+                        strokeWidth={isActive ? 1.5 : 2}
+                      />
+                      {/* Active dot indicator */}
+                      <AnimatePresence>
+                        {isActive && (
+                          <motion.div
+                            className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-accent"
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0, opacity: 0 }}
+                            transition={{ type: 'spring', damping: 15, stiffness: 500 }}
+                          />
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+
+                    <motion.span
+                      className={cn('text-[10px] font-medium relative z-10', isActive && 'font-semibold')}
+                      animate={isActive ? { opacity: 1 } : { opacity: 0.7 }}
+                    >
+                      {item.label}
+                    </motion.span>
                   </motion.button>
                 );
               })}
