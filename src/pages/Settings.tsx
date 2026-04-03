@@ -11,11 +11,21 @@ import { useState, useRef } from 'react';
 
 const Settings = () => {
   const navigate = useNavigate();
-  const { userName, partnerName, userAvatar, partnerAvatar, loveCode, anniversaryDate, importantDates, setAnniversaryDate, addImportantDate, logout } = useApp();
+  const { userName, partnerName, userAvatar, partnerAvatar, userProfilePic, loveCode, anniversaryDate, importantDates, setAnniversaryDate, addImportantDate, setUserProfilePic, logout } = useApp();
   const { theme, toggleTheme } = useTheme();
   const [showLeave, setShowLeave] = useState(false);
   const [newDateName, setNewDateName] = useState('');
   const [newDate, setNewDate] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) return;
+    const reader = new FileReader();
+    reader.onloadend = () => setUserProfilePic(reader.result as string);
+    reader.readAsDataURL(file);
+  };
 
   const handleLogout = () => { logout(); navigate('/'); };
 
