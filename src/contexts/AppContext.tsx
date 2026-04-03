@@ -33,6 +33,16 @@ export interface ChatMessage {
   hearted: boolean;
 }
 
+export interface AppNotification {
+  id: string;
+  type: 'love' | 'reminder' | 'date' | 'reaction';
+  title: string;
+  message: string;
+  emoji: string;
+  timestamp: Date;
+  read: boolean;
+}
+
 interface AppState {
   isAuthenticated: boolean;
   userName: string;
