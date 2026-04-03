@@ -9,11 +9,24 @@ import { cn } from '@/lib/utils';
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { setAuth } = useApp();
+  const { setAuth, setUserProfilePic } = useApp();
   const [tab, setTab] = useState<'create' | 'join'>('create');
   const [name, setName] = useState('');
   const [avatar, setAvatar] = useState(0);
+  const [profilePic, setProfilePic] = useState('');
   const [joinCode, setJoinCode] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) return; // 5MB limit
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setProfilePic(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const generateCode = () => Math.random().toString(36).substring(2, 8).toUpperCase();
 
