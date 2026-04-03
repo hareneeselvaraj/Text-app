@@ -73,8 +73,12 @@ const LoveFeed = () => {
               <Settings className="h-4 w-4 text-muted-foreground" />
             </motion.button>
             <div className="relative">
-              <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center text-xl ring-2 ring-background">
-                {avatarEmojis[partnerAvatar]}
+              <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center text-xl ring-2 ring-background overflow-hidden">
+                {userProfilePic ? (
+                  <img src={userProfilePic} alt="You" className="h-full w-full object-cover" />
+                ) : (
+                  avatarEmojis[userAvatar]
+                )}
               </div>
               <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-background" />
             </div>
