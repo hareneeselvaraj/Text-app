@@ -146,7 +146,7 @@ const LoveChat = () => {
             whileTap={{ scale: 0.9 }}
             onClick={() => sendMessage(input)}
           >
-            <Heart className="h-5 w-5 text-primary-foreground" fill="currentColor" />
+            <Send className="h-5 w-5 text-primary-foreground" />
           </motion.button>
         </div>
       </div>
