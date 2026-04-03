@@ -1,6 +1,7 @@
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Send, Bell, Settings } from 'lucide-react';
+import { Heart, Send, Bell, Settings, X, Copy } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import AvatarPair, { avatarEmojis } from '@/components/AvatarPair';
 import HeartParticles from '@/components/HeartParticles';
@@ -26,7 +27,8 @@ const item = {
 
 const LoveFeed = () => {
   const navigate = useNavigate();
-  const { userName, partnerName, userAvatar, partnerAvatar, userProfilePic, togetherDays, userMood, partnerMood, messages, memories, notifications, addMessage } = useApp();
+  const { userName, partnerName, userAvatar, partnerAvatar, userProfilePic, togetherDays, userMood, partnerMood, messages, memories, notifications, addMessage, hasPartner, loveCode } = useApp();
+  const [showInvite, setShowInvite] = useState(false);
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const getGreeting = () => {
@@ -122,6 +124,10 @@ const LoveFeed = () => {
                   className="flex flex-col items-center gap-1.5 flex-1"
                   whileTap={{ scale: 0.9 }}
                   onClick={() => {
+                    if (!hasPartner) {
+                      setShowInvite(true);
+                      return;
+                    }
                     addMessage({
                       id: Date.now().toString(),
                       text: `${a.emoji} ${a.label}`,
@@ -156,7 +162,13 @@ const LoveFeed = () => {
           {/* Chat Preview */}
           {lastMessage && (
             <motion.div variants={item}>
-              <GlassCard className="cursor-pointer" onClick={() => navigate('/chat')}>
+              <GlassCard className="cursor-pointer" onClick={() => {
+                if (!hasPartner) {
+                  setShowInvite(true);
+                  return;
+                }
+                navigate('/chat');
+              }}>
                 <div className="flex items-center gap-3">
                   <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-lg">
                     {avatarEmojis[lastMessage.sender === 'user' ? userAvatar : partnerAvatar]}
@@ -174,6 +186,72 @@ const LoveFeed = () => {
           )}
         </motion.div>
       </div>
+
+      <AnimatePresence>
+        {showInvite && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+              onClick={() => setShowInvite(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative w-full max-w-sm glass-card p-6 flex flex-col items-center text-center shadow-xl border border-primary/20"
+            >
+              <button 
+                onClick={() => setShowInvite(false)}
+                className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-5 w-5" />
+              </button>
+              
+              <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                <Heart className="h-8 w-8 text-primary" fill="currentColor" />
+              </div>
+              
+              <h2 className="text-xl font-display font-bold text-foreground mb-2">Invite Your Partner</h2>
+              <p className="text-sm text-muted-foreground mb-6">
+                You can't send messages until your partner joins the nest. Share this code with them!
+              </p>
+              
+              <div className="w-full bg-muted/30 rounded-2xl p-4 flex items-center justify-between border border-border/20 mb-6">
+                <span className="text-3xl font-mono tracking-widest font-bold text-foreground mx-auto">{loveCode}</span>
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(loveCode);
+                    toast.success('Code copied to clipboard!');
+                  }}
+                  className="h-10 w-10 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary hover:bg-primary/20 transition-colors ml-2"
+                >
+                  <Copy className="h-5 w-5" />
+                </button>
+              </div>
+
+              <button 
+                onClick={() => {
+                  if (navigator.share) {
+                    navigator.share({
+                      title: 'Join my LoveNest ❤️',
+                      text: `Join my LoveNest using code: ${loveCode}`,
+                    }).catch(() => {});
+                  } else {
+                    navigator.clipboard.writeText(`Join my LoveNest using code: ${loveCode}`);
+                    toast.success('Invitation copied to clipboard!');
+                  }
+                }}
+                className="w-full rounded-2xl bg-primary py-3.5 font-bold text-primary-foreground shadow-lg shadow-primary/20 active:scale-95 transition-all"
+              >
+                Share Invitation
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <BottomNav />
     </div>
