@@ -67,6 +67,7 @@ interface AppState {
 interface AppContextType extends AppState {
   setAuth: (name: string, avatar: number, code: string) => void;
   setUserMood: (mood: string) => void;
+  setUserProfilePic: (pic: string) => void;
   addMemory: (memory: Memory) => void;
   addNote: (note: Note) => void;
   updateNote: (note: Note) => void;
@@ -76,6 +77,9 @@ interface AppContextType extends AppState {
   deleteGift: (id: string) => void;
   addMessage: (msg: ChatMessage) => void;
   toggleHeart: (id: string) => void;
+  addNotification: (n: AppNotification) => void;
+  markNotificationRead: (id: string) => void;
+  markAllNotificationsRead: () => void;
   setAnniversaryDate: (date: string) => void;
   addImportantDate: (d: { name: string; date: string; notify: boolean }) => void;
   logout: () => void;
