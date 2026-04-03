@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Send } from 'lucide-react';
+import { Heart, Send, Bell, Settings } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import AvatarPair, { avatarEmojis } from '@/components/AvatarPair';
 import HeartParticles from '@/components/HeartParticles';
