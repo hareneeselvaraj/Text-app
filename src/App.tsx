@@ -36,6 +36,7 @@ const App = () => (
                 <Route path="/gifts" element={<Gifts />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/mood" element={<MoodSelector />} />
+                <Route path="/notifications" element={<Notifications />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </MobileShell>

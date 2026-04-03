@@ -54,11 +54,16 @@ const LoveFeed = () => {
           </div>
           <div className="flex items-center gap-2">
             <motion.button
-              className="h-9 w-9 rounded-full glass-card flex items-center justify-center"
+              className="h-9 w-9 rounded-full glass-card flex items-center justify-center relative"
               whileTap={{ scale: 0.9 }}
-              onClick={() => toast('No new notifications 💌')}
+              onClick={() => navigate('/notifications')}
             >
               <Bell className="h-4 w-4 text-muted-foreground" />
+              {unreadCount > 0 && (
+                <div className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-accent text-[9px] font-bold text-accent-foreground flex items-center justify-center">
+                  {unreadCount}
+                </div>
+              )}
             </motion.button>
             <motion.button
               className="h-9 w-9 rounded-full glass-card flex items-center justify-center"
