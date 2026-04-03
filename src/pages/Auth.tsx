@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Camera } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import { avatarEmojis } from '@/components/AvatarPair';
 import { useApp } from '@/contexts/AppContext';
