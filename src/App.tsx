@@ -58,7 +58,7 @@ const App = () => (
       <AuthProvider>
         <AppProvider>
           <TooltipProvider>
-            <BrowserRouter>
+            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <MobileShell>
                 <AppRoutes />
               </MobileShell>

@@ -26,7 +26,7 @@ const item = {
 
 const LoveFeed = () => {
   const navigate = useNavigate();
-  const { userName, partnerName, userAvatar, partnerAvatar, userProfilePic, togetherDays, userMood, partnerMood, messages, memories, notifications } = useApp();
+  const { userName, partnerName, userAvatar, partnerAvatar, userProfilePic, togetherDays, userMood, partnerMood, messages, memories, notifications, addMessage } = useApp();
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const getGreeting = () => {
@@ -121,7 +121,16 @@ const LoveFeed = () => {
                   key={a.label}
                   className="flex flex-col items-center gap-1.5 flex-1"
                   whileTap={{ scale: 0.9 }}
-                  onClick={() => toast(`${a.emoji} ${a.label} sent to ${partnerName}!`)}
+                  onClick={() => {
+                    addMessage({
+                      id: Date.now().toString(),
+                      text: `${a.emoji} ${a.label}`,
+                      sender: 'user',
+                      timestamp: new Date(),
+                      hearted: false
+                    });
+                    toast(`${a.emoji} ${a.label} sent to ${partnerName}!`);
+                  }}
                 >
                   <div className="glass-card h-14 w-14 rounded-full flex items-center justify-center text-2xl mx-auto">
                     {a.emoji}
