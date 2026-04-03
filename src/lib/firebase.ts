@@ -3,17 +3,17 @@ import { getMessaging } from "firebase/messaging";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-export const GOOGLE_CLIENT_ID = "746833194533-gpeuqrpidu62arq9emk49bek1s276ct4.apps.googleusercontent.com";
-export const APP_NAME = "Text-app";
+export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+export const APP_NAME = import.meta.env.VITE_APP_NAME || "Text-app";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCbtAsIZqdWkv_iknJz0M9vtZ2BygqSnLo",
-  authDomain: "text-app-ad297.firebaseapp.com",
-  projectId: "text-app-ad297",
-  storageBucket: "text-app-ad297.firebasestorage.app",
-  messagingSenderId: "746833194533",
-  appId: "1:746833194533:web:4a22e7825c6fb5e62c59cc",
-  measurementId: "G-NTTPJ222DN"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase

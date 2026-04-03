@@ -125,9 +125,12 @@
   html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    @apply bg-background;
+    background-color: hsl(var(--background));
   }
-  body {
+  body, #root {
     @apply bg-background text-foreground font-body antialiased;
+    background-color: hsl(var(--background));
     font-family: var(--font-body);
     overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;

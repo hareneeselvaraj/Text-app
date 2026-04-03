@@ -23,6 +23,7 @@ interface AppState {
   togetherDays: number;
   userMood: string;
   partnerMood: string;
+  hasPartner: boolean;
   memories: Memory[];
   notes: Note[];
   gifts: Gift[];
@@ -73,6 +74,7 @@ const initialState: AppState = {
   togetherDays: 0,
   userMood: '😊',
   partnerMood: '😊',
+  hasPartner: false,
   memories: [],
   notes: [],
   gifts: [],
@@ -190,10 +192,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const data = docSnap.data();
         let pName = 'Partner', pAvatar = 3, pPic = '', pMood = '😊';
         let uMood = state.userMood;
+        let hasP = false;
         
         if (data.users) {
           const partnerId = Object.keys(data.users).find(k => k !== currentUser.uid);
           if (partnerId) {
+            hasP = true;
             const p = data.users[partnerId];
             pName = p.name || 'Partner';
             pAvatar = p.avatar || 3;
@@ -212,6 +216,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           partnerProfilePic: pPic,
           partnerMood: pMood,
           userMood: uMood,
+          hasPartner: hasP,
           anniversaryDate: data.anniversaryDate || s.anniversaryDate,
           importantDates: data.importantDates || s.importantDates,
         }));
