@@ -4,7 +4,7 @@ import {
   serverTimestamp, addDoc, deleteDoc
 } from 'firebase/firestore';
 import { User } from 'firebase/auth';
-import { Memory, Note, Gift, ChatMessage } from '../contexts/AppContext';
+import { Note } from '../contexts/AppContext';
 
 export const createNest = async (user: User, userName: string, userAvatar: number, profilePic: string): Promise<string> => {
   const code = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -84,21 +84,6 @@ export const toggleHeartMessageFb = async (code: string, msgId: string, currentH
   });
 };
 
-export const addMemoryFb = async (code: string, memory: Omit<Memory, 'id'>) => {
-  const memRef = collection(db, 'nests', code, 'memories');
-  await addDoc(memRef, {
-    ...memory,
-    timestamp: serverTimestamp()
-  });
-};
-
-export const likeMemoryFb = async (code: string, memId: string, currentLikes: number) => {
-  const memRef = doc(db, 'nests', code, 'memories', memId);
-  await updateDoc(memRef, {
-    likes: currentLikes + 1
-  });
-};
-
 export const addNoteFb = async (code: string, uid: string, note: Omit<Note, 'id' | 'createdBy' | 'timestamp'>) => {
   const noteRef = collection(db, 'nests', code, 'notes');
   await addDoc(noteRef, {
@@ -117,24 +102,4 @@ export const updateNoteFb = async (code: string, note: Note) => {
 export const deleteNoteFb = async (code: string, id: string) => {
   const noteRef = doc(db, 'nests', code, 'notes', id);
   await deleteDoc(noteRef);
-};
-
-export const addGiftFb = async (code: string, uid: string, gift: Omit<Gift, 'id'>) => {
-  const giftRef = collection(db, 'nests', code, 'gifts');
-  await addDoc(giftRef, {
-    ...gift,
-    owner: uid,
-    timestamp: serverTimestamp()
-  });
-};
-
-export const updateGiftFb = async (code: string, gift: Gift) => {
-  const giftRef = doc(db, 'nests', code, 'gifts', gift.id);
-  const { id, ...data } = gift;
-  await updateDoc(giftRef, data as any);
-};
-
-export const deleteGiftFb = async (code: string, id: string) => {
-  const giftRef = doc(db, 'nests', code, 'gifts', id);
-  await deleteDoc(giftRef);
 };

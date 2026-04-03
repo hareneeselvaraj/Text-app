@@ -2,8 +2,9 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { saveState, loadState, clearAllState } from '@/lib/storage';
 import { useAuth } from './AuthContext';
 import { db } from '../lib/firebase';
-import { collection, doc, onSnapshot, query, orderBy, where, getDoc } from 'firebase/firestore';
-import { addMemoryFb, likeMemoryFb, addNoteFb, updateNoteFb, deleteNoteFb, addGiftFb, updateGiftFb, deleteGiftFb, sendMessageFb, toggleHeartMessageFb, updateUserMoodFb } from '../lib/firestore';
+import { collection, doc, onSnapshot, query, orderBy, where } from 'firebase/firestore';
+import { addNoteFb, updateNoteFb, deleteNoteFb, addGiftFb, updateGiftFb, deleteGiftFb, sendMessageFb, toggleHeartMessageFb, updateUserMoodFb } from '../lib/firestore';
+import { uploadToDrive, downloadFromDrive } from '../lib/driveSync';
 
 export interface Memory { id: string; photo: string; date: string; caption: string; likes: number; timestamp?: any; }
 export interface Note { id: string; title: string; content: string; category: 'all' | 'grocery' | 'plans' | 'thoughts'; createdBy: string; timestamp?: any; }
@@ -29,6 +30,7 @@ interface AppState {
   notifications: AppNotification[];
   anniversaryDate: string;
   importantDates: { name: string; date: string; notify: boolean }[];
+  lastDriveBackup: string;
 }
 
 interface AppContextType extends AppState {
@@ -39,6 +41,7 @@ interface AppContextType extends AppState {
   setUserMood: (mood: string) => void;
   setUserProfilePic: (pic: string) => void;
   addMemory: (memory: Memory) => void;
+  likeMemory: (id: string) => void;
   addNote: (note: Note) => void;
   updateNote: (note: Note) => void;
   deleteNote: (id: string) => void;
@@ -55,7 +58,8 @@ interface AppContextType extends AppState {
   logout: () => void;
   exportData: () => Promise<string>;
   importData: (json: string) => Promise<void>;
-  likeMemory: (id: string) => void;
+  backupToDriveNow: () => Promise<boolean>;
+  restoreFromDriveNow: () => Promise<boolean>;
 }
 
 const initialState: AppState = {
@@ -76,6 +80,7 @@ const initialState: AppState = {
   notifications: [],
   anniversaryDate: '',
   importantDates: [],
+  lastDriveBackup: '',
 };
 
 const STATE_KEY = 'lovenest-app-state-v3';
@@ -85,9 +90,11 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, setState] = useState<AppState>(initialState);
   const [localLoading, setLocalLoading] = useState(true);
-  const { currentUser, isLoadingAuth, signOut } = useAuth();
-  
-  // Load local state initially just for loveCode mostly
+  const { currentUser, isLoadingAuth, signOut, driveAccessToken } = useAuth();
+  const driveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasRestoredFromDriveRef = useRef(false);
+
+  // Load local state on mount
   useEffect(() => {
     (async () => {
       try {
@@ -103,13 +110,76 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     })();
   }, []);
 
-  // Save loveCode and local preferences
+  // Save essential local preferences to IndexedDB
   useEffect(() => {
     if (localLoading) return;
-    saveState(STATE_KEY, { loveCode: state.loveCode, userName: state.userName, userAvatar: state.userAvatar }).catch(e => console.warn(e));
-  }, [state.loveCode, state.userName, state.userAvatar, localLoading]);
+    saveState(STATE_KEY, {
+      loveCode: state.loveCode,
+      userName: state.userName,
+      userAvatar: state.userAvatar,
+      memories: state.memories,
+      gifts: state.gifts,
+      importantDates: state.importantDates,
+      anniversaryDate: state.anniversaryDate,
+      lastDriveBackup: state.lastDriveBackup,
+    }).catch(e => console.warn(e));
+  }, [state.loveCode, state.userName, state.userAvatar, state.memories, state.gifts, state.importantDates, state.anniversaryDate, state.lastDriveBackup, localLoading]);
 
-  // Firestore Subscriptions
+  // Auto-restore from Drive on first sign-in (if local data is empty)
+  useEffect(() => {
+    if (!driveAccessToken || !currentUser || hasRestoredFromDriveRef.current) return;
+    if (state.memories.length > 0 || state.loveCode) {
+      hasRestoredFromDriveRef.current = true;
+      return; // Already have local data, skip restore
+    }
+
+    hasRestoredFromDriveRef.current = true;
+    (async () => {
+      try {
+        const data = await downloadFromDrive(driveAccessToken);
+        if (data) {
+          const parsed = JSON.parse(data);
+          setState(s => ({ ...s, ...parsed }));
+          console.log('Restored data from Google Drive');
+        }
+      } catch (e) {
+        console.warn('Failed to restore from Drive:', e);
+      }
+    })();
+  }, [driveAccessToken, currentUser]);
+
+  // Debounced auto-backup to Drive when personal data changes
+  useEffect(() => {
+    if (!driveAccessToken || localLoading) return;
+
+    if (driveTimerRef.current) clearTimeout(driveTimerRef.current);
+    driveTimerRef.current = setTimeout(async () => {
+      try {
+        const backupData = JSON.stringify({
+          userName: state.userName,
+          userAvatar: state.userAvatar,
+          userProfilePic: state.userProfilePic,
+          loveCode: state.loveCode,
+          memories: state.memories,
+          gifts: state.gifts,
+          importantDates: state.importantDates,
+          anniversaryDate: state.anniversaryDate,
+        });
+        const ok = await uploadToDrive(driveAccessToken, backupData);
+        if (ok) {
+          const now = new Date().toISOString();
+          setState(s => ({ ...s, lastDriveBackup: now }));
+          console.log('Auto-backed up to Drive');
+        }
+      } catch (e) {
+        console.warn('Drive auto-backup failed:', e);
+      }
+    }, 10000); // 10 second debounce
+
+    return () => { if (driveTimerRef.current) clearTimeout(driveTimerRef.current); };
+  }, [driveAccessToken, state.memories, state.gifts, state.importantDates, state.userName, state.userAvatar, localLoading]);
+
+  // Firestore Subscriptions (messages, moods, notes — NOT memories)
   useEffect(() => {
     if (!currentUser || !state.loveCode) return;
     const code = state.loveCode;
@@ -159,14 +229,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setState(s => ({ ...s, messages: msgs }));
     });
 
-    // 3. Memories
-    const memQ = query(collection(db, 'nests', code, 'memories'), orderBy('timestamp', 'desc'));
-    const unsubMemories = onSnapshot(memQ, (snap) => {
-      const mems = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Memory[];
-      setState(s => ({ ...s, memories: mems }));
-    });
-
-    // 4. Notes
+    // 3. Notes (shared between partners)
     const notesQ = query(collection(db, 'nests', code, 'notes'), orderBy('timestamp', 'desc'));
     const unsubNotes = onSnapshot(notesQ, (snap) => {
       const nts = snap.docs.map(d => ({ 
@@ -177,19 +240,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setState(s => ({ ...s, notes: nts }));
     });
 
-    // 5. Gifts (Private)
-    const giftsQ = query(collection(db, 'nests', code, 'gifts'), where('owner', '==', currentUser.uid));
-    const unsubGifts = onSnapshot(giftsQ, (snap) => {
-      const gfs = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Gift[];
-      setState(s => ({ ...s, gifts: gfs }));
-    });
-
     return () => {
       unsubNest();
       unsubMsgs();
-      unsubMemories();
       unsubNotes();
-      unsubGifts();
     };
   }, [currentUser, state.loveCode]);
 
@@ -206,15 +260,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const setUserProfilePic = useCallback((pic: string) => setState(s => ({ ...s, userProfilePic: pic })), []);
 
+  // Memories — local + Drive only (NOT Firestore)
   const addMemory = useCallback((m: Memory) => {
-    if (state.loveCode) addMemoryFb(state.loveCode, m).catch(console.error);
-  }, [state.loveCode]);
+    setState(s => ({ ...s, memories: [m, ...s.memories] }));
+  }, []);
 
   const likeMemory = useCallback((id: string) => {
-    const mem = state.memories.find(m => m.id === id);
-    if (state.loveCode && mem) likeMemoryFb(state.loveCode, id, mem.likes).catch(console.error);
-  }, [state.loveCode, state.memories]);
+    setState(s => ({
+      ...s,
+      memories: s.memories.map(m => m.id === id ? { ...m, likes: m.likes + 1 } : m)
+    }));
+  }, []);
 
+  // Notes — Firestore shared
   const addNote = useCallback((n: Note) => {
     if (state.loveCode && currentUser) addNoteFb(state.loveCode, currentUser.uid, n).catch(console.error);
   }, [state.loveCode, currentUser]);
@@ -227,18 +285,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (state.loveCode) deleteNoteFb(state.loveCode, id).catch(console.error);
   }, [state.loveCode]);
 
+  // Gifts — local + Drive only (private)
   const addGift = useCallback((g: Gift) => {
-    if (state.loveCode && currentUser) addGiftFb(state.loveCode, currentUser.uid, g).catch(console.error);
-  }, [state.loveCode, currentUser]);
+    setState(s => ({ ...s, gifts: [...s.gifts, g] }));
+  }, []);
 
   const updateGift = useCallback((g: Gift) => {
-    if (state.loveCode) updateGiftFb(state.loveCode, g).catch(console.error);
-  }, [state.loveCode]);
+    setState(s => ({ ...s, gifts: s.gifts.map(x => x.id === g.id ? g : x) }));
+  }, []);
 
   const deleteGift = useCallback((id: string) => {
-    if (state.loveCode) deleteGiftFb(state.loveCode, id).catch(console.error);
-  }, [state.loveCode]);
+    setState(s => ({ ...s, gifts: s.gifts.filter(x => x.id !== id) }));
+  }, []);
 
+  // Messages — Firestore shared
   const addMessage = useCallback((msg: ChatMessage) => {
     if (state.loveCode && currentUser) sendMessageFb(state.loveCode, currentUser.uid, msg.text).catch(console.error);
   }, [state.loveCode, currentUser]);
@@ -248,7 +308,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (state.loveCode && msg) toggleHeartMessageFb(state.loveCode, id, msg.hearted).catch(console.error);
   }, [state.loveCode, state.messages]);
 
-  // Keep notifications local for now to avoid complexity of individual read states
+  // Notifications — local only
   const addNotification = useCallback((n: AppNotification) => setState(s => ({ ...s, notifications: [n, ...s.notifications] })), []);
   const markNotificationRead = useCallback((id: string) => setState(s => ({
     ...s, notifications: s.notifications.map(n => n.id === id ? { ...n, read: true } : n)
@@ -264,12 +324,44 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const logout = useCallback(() => {
     clearAllState().catch(() => {});
     setState(initialState);
+    hasRestoredFromDriveRef.current = false;
     if (currentUser) signOut();
   }, [currentUser, signOut]);
 
-  // Disabled exports for Firebase version
-  const exportData = useCallback(async (): Promise<string> => "{}", []);
-  const importData = useCallback(async (json: string) => {}, []);
+  // Export / Import
+  const exportData = useCallback(async (): Promise<string> => {
+    return JSON.stringify({
+      userName: state.userName, userAvatar: state.userAvatar, loveCode: state.loveCode,
+      memories: state.memories, gifts: state.gifts,
+      importantDates: state.importantDates, anniversaryDate: state.anniversaryDate,
+    });
+  }, [state]);
+
+  const importData = useCallback(async (json: string) => {
+    try {
+      const parsed = JSON.parse(json);
+      setState(s => ({ ...s, ...parsed }));
+    } catch (e) {
+      console.error('Import failed:', e);
+    }
+  }, []);
+
+  // Manual Drive operations
+  const backupToDriveNow = useCallback(async (): Promise<boolean> => {
+    if (!driveAccessToken) return false;
+    const data = await exportData();
+    return uploadToDrive(driveAccessToken, data);
+  }, [driveAccessToken, exportData]);
+
+  const restoreFromDriveNow = useCallback(async (): Promise<boolean> => {
+    if (!driveAccessToken) return false;
+    const data = await downloadFromDrive(driveAccessToken);
+    if (data) {
+      await importData(data);
+      return true;
+    }
+    return false;
+  }, [driveAccessToken, importData]);
 
   const isLoading = localLoading || isLoadingAuth;
   const isAuthenticated = !!currentUser && state.loveCode !== '';
@@ -278,6 +370,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const togetherDays = state.anniversaryDate 
     ? Math.floor((Date.now() - new Date(state.anniversaryDate).getTime()) / (1000 * 60 * 60 * 24))
     : 0;
+
   return (
     <AppContext.Provider value={{
       ...state, isAuthenticated, isLoading, togetherDays, setAuth, setPartnerInfo, setUserMood, setUserProfilePic,
@@ -285,7 +378,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       addGift, updateGift, deleteGift, addMessage, toggleHeart,
       addNotification, markNotificationRead, markAllNotificationsRead,
       setAnniversaryDate, addImportantDate, logout,
-      exportData, importData,
+      exportData, importData, backupToDriveNow, restoreFromDriveNow,
     }}>
       {children}
     </AppContext.Provider>

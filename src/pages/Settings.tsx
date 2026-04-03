@@ -1,21 +1,13 @@
 import { motion } from 'framer-motion';
-import { ArrowLeft, Moon, Sun, Gift, LogOut, Calendar, Plus, Heart, Camera, Cloud, CloudOff, Download, Upload, Share2, Smartphone } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Gift, LogOut, Calendar, Plus, Heart, Camera, Cloud, Download, Upload, Share2, Smartphone, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import GlassCard from '@/components/GlassCard';
 import { avatarEmojis } from '@/components/AvatarPair';
 import { useApp } from '@/contexts/AppContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 import { useState, useRef } from 'react';
-import {
-  signInToDrive,
-  signOutOfDrive,
-  isConnected as isDriveConnected,
-  uploadToDrive,
-  downloadFromDrive,
-  getClientId,
-  setClientId,
-} from '@/lib/driveSync';
 import { toast } from 'sonner';
 
 const Settings = () => {
@@ -24,13 +16,13 @@ const Settings = () => {
     userName, partnerName, userAvatar, partnerAvatar, userProfilePic, loveCode,
     anniversaryDate, importantDates, setAnniversaryDate, addImportantDate,
     setUserProfilePic, logout, exportData, importData,
+    lastDriveBackup, backupToDriveNow, restoreFromDriveNow,
   } = useApp();
+  const { driveAccessToken } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [showLeave, setShowLeave] = useState(false);
   const [newDateName, setNewDateName] = useState('');
   const [newDate, setNewDate] = useState('');
-  const [driveClientId, setDriveClientId] = useState(getClientId());
-  const [driveConnected, setDriveConnected] = useState(isDriveConnected());
   const [syncing, setSyncing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
@@ -46,7 +38,7 @@ const Settings = () => {
 
   const handleLogout = () => { logout(); navigate('/'); };
 
-  // --- Backup & Sync ---
+  // --- Local Backup ---
   const handleExportLocal = async () => {
     const data = await exportData();
     const blob = new Blob([data], { type: 'application/json' });
@@ -90,43 +82,28 @@ const Settings = () => {
   };
 
   // --- Google Drive ---
-  const handleDriveConnect = async () => {
-    if (!driveClientId) {
-      toast('Enter your Google Client ID first');
-      return;
-    }
-    setClientId(driveClientId);
+  const handleDriveBackup = async () => {
     setSyncing(true);
-    const ok = await signInToDrive();
+    const ok = await backupToDriveNow();
     setSyncing(false);
-    setDriveConnected(ok);
-    toast(ok ? 'Connected to Google Drive!' : 'Connection failed');
+    toast(ok ? 'Backed up to your Drive!' : 'Backup failed — try signing in again');
   };
 
-  const handleDriveDisconnect = () => {
-    signOutOfDrive();
-    setDriveConnected(false);
-    toast('Disconnected from Drive');
+  const handleDriveRestore = async () => {
+    setSyncing(true);
+    const ok = await restoreFromDriveNow();
+    setSyncing(false);
+    toast(ok ? 'Restored from your Drive!' : 'No backup found on your Drive');
   };
 
-  const handleDriveUpload = async () => {
-    setSyncing(true);
-    const data = await exportData();
-    const ok = await uploadToDrive(data);
-    setSyncing(false);
-    toast(ok ? 'Synced to Drive!' : 'Sync failed');
-  };
-
-  const handleDriveDownload = async () => {
-    setSyncing(true);
-    const data = await downloadFromDrive();
-    setSyncing(false);
-    if (data) {
-      await importData(data);
-      toast('Restored from Drive!');
-    } else {
-      toast('No backup found on Drive');
-    }
+  const formatBackupTime = (iso: string) => {
+    if (!iso) return 'Never';
+    const d = new Date(iso);
+    const mins = Math.floor((Date.now() - d.getTime()) / 60000);
+    if (mins < 1) return 'Just now';
+    if (mins < 60) return `${mins}m ago`;
+    if (mins < 1440) return `${Math.floor(mins / 60)}h ago`;
+    return d.toLocaleDateString();
   };
 
   const isPWA = window.matchMedia('(display-mode: standalone)').matches;
@@ -192,9 +169,57 @@ const Settings = () => {
           </div>
         </GlassCard>
 
+        {/* Google Drive Auto-Backup */}
+        <GlassCard>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+              <Cloud className={cn("h-3.5 w-3.5", driveAccessToken ? "text-emerald-500" : "text-muted-foreground")} />
+              Personal Drive Backup
+            </p>
+            {driveAccessToken && (
+              <span className="text-[10px] text-emerald-500 font-medium">● Connected</span>
+            )}
+          </div>
+
+          {driveAccessToken ? (
+            <div className="space-y-2">
+              <p className="text-[10px] text-muted-foreground/70">
+                Last backup: <span className="font-medium text-foreground">{formatBackupTime(lastDriveBackup)}</span>
+              </p>
+              <div className="flex gap-2">
+                <motion.button
+                  className="flex-1 rounded-xl bg-emerald-500/10 py-2.5 text-sm font-medium text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-2"
+                  whileTap={{ scale: 0.97 }}
+                  onClick={handleDriveBackup}
+                  disabled={syncing}
+                >
+                  {syncing ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Cloud className="h-3.5 w-3.5" />}
+                  {syncing ? 'Syncing...' : 'Backup Now'}
+                </motion.button>
+                <motion.button
+                  className="flex-1 rounded-xl bg-primary/10 py-2.5 text-sm font-medium text-primary flex items-center justify-center gap-2"
+                  whileTap={{ scale: 0.97 }}
+                  onClick={handleDriveRestore}
+                  disabled={syncing}
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  Restore
+                </motion.button>
+              </div>
+              <p className="text-[10px] text-muted-foreground/50 text-center">
+                Auto-saves memories & gifts to your personal Drive every 10 seconds
+              </p>
+            </div>
+          ) : (
+            <p className="text-[10px] text-muted-foreground/60 text-center py-2">
+              Sign in with Google to enable automatic Drive backups
+            </p>
+          )}
+        </GlassCard>
+
         {/* Data & Backup */}
         <GlassCard>
-          <p className="text-xs font-medium text-muted-foreground mb-3">Data & Backup</p>
+          <p className="text-xs font-medium text-muted-foreground mb-3">Local Backup</p>
           <div className="grid grid-cols-3 gap-2">
             <motion.button
               className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-muted/50 text-foreground"
@@ -202,7 +227,7 @@ const Settings = () => {
               onClick={handleExportLocal}
             >
               <Download className="h-5 w-5 text-primary" />
-              <span className="text-[10px] font-medium">Backup</span>
+              <span className="text-[10px] font-medium">Download</span>
             </motion.button>
             <motion.button
               className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-muted/50 text-foreground"
@@ -222,67 +247,6 @@ const Settings = () => {
             </motion.button>
           </div>
           <input ref={importInputRef} type="file" accept=".json" className="hidden" onChange={handleImportLocal} />
-          <p className="text-[10px] text-muted-foreground/60 mt-3 text-center">
-            Share your backup file with your partner to sync data between devices
-          </p>
-        </GlassCard>
-
-        {/* Google Drive Sync */}
-        <GlassCard>
-          <p className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-2">
-            {driveConnected ? <Cloud className="h-3.5 w-3.5 text-emerald-500" /> : <CloudOff className="h-3.5 w-3.5" />}
-            Google Drive Sync
-          </p>
-          {!driveConnected ? (
-            <div className="space-y-2">
-              <input
-                className="w-full rounded-lg bg-muted/50 px-3 py-2.5 text-xs text-foreground placeholder:text-muted-foreground/50 outline-none font-mono"
-                placeholder="Google OAuth Client ID (optional)"
-                value={driveClientId}
-                onChange={e => setDriveClientId(e.target.value)}
-              />
-              <motion.button
-                className="w-full rounded-xl bg-primary/10 py-2.5 text-sm font-medium text-primary flex items-center justify-center gap-2"
-                whileTap={{ scale: 0.97 }}
-                onClick={handleDriveConnect}
-                disabled={syncing}
-              >
-                <Cloud className="h-4 w-4" />
-                {syncing ? 'Connecting...' : 'Connect to Drive'}
-              </motion.button>
-              <p className="text-[10px] text-muted-foreground/60 text-center">
-                Auto-backup your nest data to Google Drive
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <motion.button
-                  className="flex-1 rounded-xl bg-emerald-500/10 py-2.5 text-sm font-medium text-emerald-600 dark:text-emerald-400"
-                  whileTap={{ scale: 0.97 }}
-                  onClick={handleDriveUpload}
-                  disabled={syncing}
-                >
-                  {syncing ? 'Syncing...' : 'Upload to Drive'}
-                </motion.button>
-                <motion.button
-                  className="flex-1 rounded-xl bg-primary/10 py-2.5 text-sm font-medium text-primary"
-                  whileTap={{ scale: 0.97 }}
-                  onClick={handleDriveDownload}
-                  disabled={syncing}
-                >
-                  Restore from Drive
-                </motion.button>
-              </div>
-              <motion.button
-                className="w-full rounded-xl bg-muted/50 py-2 text-xs text-muted-foreground"
-                whileTap={{ scale: 0.97 }}
-                onClick={handleDriveDisconnect}
-              >
-                Disconnect
-              </motion.button>
-            </div>
-          )}
         </GlassCard>
 
         {/* Gift List Link */}
@@ -331,9 +295,9 @@ const Settings = () => {
         {/* About */}
         <GlassCard className="text-center">
           <Heart className="h-5 w-5 text-accent mx-auto mb-1" fill="currentColor" />
-          <p className="text-xs text-muted-foreground">LoveNest v3.0</p>
+          <p className="text-xs text-muted-foreground">LoveNest v3.1</p>
           <p className="text-xs text-muted-foreground">Made with love</p>
-          <p className="text-[10px] text-muted-foreground/50 mt-1">Firebase Real-time Sync</p>
+          <p className="text-[10px] text-muted-foreground/50 mt-1">Firebase Sync + Personal Drive Backup</p>
         </GlassCard>
 
         {/* Danger Zone */}
@@ -359,7 +323,7 @@ const Settings = () => {
         <motion.div className="absolute inset-0 z-50 flex items-center justify-center bg-foreground/20 px-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={() => setShowLeave(false)}>
           <GlassCard className="max-w-sm w-full text-center p-6" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
             <p className="text-lg font-display font-bold text-foreground mb-2">Leave Nest?</p>
-            <p className="text-sm text-muted-foreground mb-6">This will remove you from this nest. Your backup will be saved.</p>
+            <p className="text-sm text-muted-foreground mb-6">This will remove you from this nest. Your Drive backup will be kept.</p>
             <div className="flex gap-3">
               <motion.button className="flex-1 rounded-xl bg-muted/50 py-2.5 text-sm text-muted-foreground" whileTap={{ scale: 0.97 }} onClick={() => setShowLeave(false)}>Stay</motion.button>
               <motion.button className="flex-1 rounded-xl bg-destructive py-2.5 text-sm text-destructive-foreground" whileTap={{ scale: 0.97 }} onClick={handleLogout}>Leave</motion.button>
