@@ -2,8 +2,8 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { saveState, loadState, clearAllState } from '@/lib/storage';
 import { useAuth } from './AuthContext';
 import { db } from '../lib/firebase';
-import { collection, doc, onSnapshot, query, orderBy, where } from 'firebase/firestore';
-import { addNoteFb, updateNoteFb, deleteNoteFb, addGiftFb, updateGiftFb, deleteGiftFb, sendMessageFb, toggleHeartMessageFb, updateUserMoodFb } from '../lib/firestore';
+import { collection, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { addNoteFb, updateNoteFb, deleteNoteFb, sendMessageFb, toggleHeartMessageFb, updateUserMoodFb } from '../lib/firestore';
 import { uploadToDrive, downloadFromDrive } from '../lib/driveSync';
 
 export interface Memory { id: string; photo: string; date: string; caption: string; likes: number; timestamp?: any; }

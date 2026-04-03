@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut, onAuthStateChanged, OAuthProvider } from 'firebase/auth';
+import { User, GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut, onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 
 interface AuthContextType {
@@ -27,6 +27,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
+    // Enforce the specific Client ID provided by the user
+    provider.setCustomParameters({
+      client_id: "746833194533-gpeuqrpidu62arq9emk49bek1s276ct4.apps.googleusercontent.com"
+    });
     // Request Drive appdata scope so we can backup/restore user data
     provider.addScope('https://www.googleapis.com/auth/drive.appdata');
     const result = await signInWithPopup(auth, provider);

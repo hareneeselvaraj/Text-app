@@ -3,6 +3,9 @@ import { getMessaging } from "firebase/messaging";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
+export const GOOGLE_CLIENT_ID = "746833194533-gpeuqrpidu62arq9emk49bek1s276ct4.apps.googleusercontent.com";
+export const APP_NAME = "Text-app";
+
 const firebaseConfig = {
   apiKey: "AIzaSyCbtAsIZqdWkv_iknJz0M9vtZ2BygqSnLo",
   authDomain: "text-app-ad297.firebaseapp.com",
