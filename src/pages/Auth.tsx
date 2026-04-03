@@ -84,21 +84,50 @@ const Auth = () => {
             </div>
 
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-2 block">Choose Avatar</label>
-              <div className="flex gap-3 justify-center">
-                {avatarEmojis.map((emoji, i) => (
-                  <motion.button
-                    key={i}
-                    className={cn(
-                      'h-12 w-12 rounded-full flex items-center justify-center text-2xl transition-all',
-                      avatar === i ? 'bg-primary/15 ring-2 ring-primary scale-110' : 'bg-muted/50'
-                    )}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setAvatar(i)}
-                  >
-                    {emoji}
-                  </motion.button>
-                ))}
+              <label className="text-xs font-medium text-muted-foreground mb-2 block">Profile Picture</label>
+              <div className="flex items-center gap-4 justify-center">
+                <motion.button
+                  className="relative h-20 w-20 rounded-full bg-muted/50 flex items-center justify-center overflow-hidden ring-2 ring-border/30"
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {profilePic ? (
+                    <img src={profilePic} alt="Profile" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex flex-col items-center gap-1">
+                      <Camera className="h-5 w-5 text-muted-foreground" />
+                      <span className="text-[9px] text-muted-foreground">Upload</span>
+                    </div>
+                  )}
+                  <div className="absolute bottom-0 right-0 h-6 w-6 rounded-full bg-primary flex items-center justify-center">
+                    <Camera className="h-3 w-3 text-primary-foreground" />
+                  </div>
+                </motion.button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+                <div className="text-left">
+                  <p className="text-xs text-muted-foreground">Or choose an avatar</p>
+                  <div className="flex gap-2 mt-2">
+                    {avatarEmojis.map((emoji, i) => (
+                      <motion.button
+                        key={i}
+                        className={cn(
+                          'h-10 w-10 rounded-full flex items-center justify-center text-lg transition-all',
+                          avatar === i && !profilePic ? 'bg-primary/15 ring-2 ring-primary scale-110' : 'bg-muted/50'
+                        )}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => { setAvatar(i); setProfilePic(''); }}
+                      >
+                        {emoji}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
