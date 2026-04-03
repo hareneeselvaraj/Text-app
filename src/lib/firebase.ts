@@ -1,5 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getMessaging } from "firebase/messaging";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCbtAsIZqdWkv_iknJz0M9vtZ2BygqSnLo",
@@ -14,8 +16,13 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+
 // Initialize Cloud Messaging and get a reference to the service
 // We only initialize messaging if we are in the browser and service workers are supported
 export const messaging = typeof window !== 'undefined' && 'serviceWorker' in navigator 
   ? getMessaging(app) 
   : null;
+
+export default app;

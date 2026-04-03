@@ -331,9 +331,9 @@ const Settings = () => {
         {/* About */}
         <GlassCard className="text-center">
           <Heart className="h-5 w-5 text-accent mx-auto mb-1" fill="currentColor" />
-          <p className="text-xs text-muted-foreground">LoveNest v2.0</p>
+          <p className="text-xs text-muted-foreground">LoveNest v3.0</p>
           <p className="text-xs text-muted-foreground">Made with love</p>
-          <p className="text-[10px] text-muted-foreground/50 mt-1">PWA + IndexedDB + Drive Sync</p>
+          <p className="text-[10px] text-muted-foreground/50 mt-1">Firebase Real-time Sync</p>
         </GlassCard>
 
         {/* Danger Zone */}

@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AppProvider, useApp } from "@/contexts/AppContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import MobileShell from "@/components/MobileShell";
 import { useFirebaseNotifications } from "@/hooks/useFirebaseNotifications";
 import InstallPrompt from "@/components/InstallPrompt";
@@ -54,15 +55,17 @@ const AppRoutes = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
-      <AppProvider>
-        <TooltipProvider>
-          <BrowserRouter>
-            <MobileShell>
-              <AppRoutes />
-            </MobileShell>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AppProvider>
+      <AuthProvider>
+        <AppProvider>
+          <TooltipProvider>
+            <BrowserRouter>
+              <MobileShell>
+                <AppRoutes />
+              </MobileShell>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AppProvider>
+      </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );

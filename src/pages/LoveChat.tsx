@@ -16,7 +16,6 @@ const LoveChat = () => {
   const navigate = useNavigate();
   const { userName, partnerName, partnerAvatar, userAvatar, messages, addMessage, toggleHeart } = useApp();
   const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -27,20 +26,6 @@ const LoveChat = () => {
     if (!text.trim()) return;
     addMessage({ id: Date.now().toString(), text, sender: 'user', timestamp: new Date(), hearted: false });
     setInput('');
-
-    // Simulate partner typing
-    setIsTyping(true);
-    setTimeout(() => {
-      setIsTyping(false);
-      const replies = ['❤️', 'Aww! 🥰', 'You\'re the best!', 'Love you more! 💕', '🥺💕'];
-      addMessage({
-        id: (Date.now() + 1).toString(),
-        text: replies[Math.floor(Math.random() * replies.length)],
-        sender: 'partner',
-        timestamp: new Date(),
-        hearted: false,
-      });
-    }, 1500 + Math.random() * 1000);
   };
 
   const formatTime = (d: Date) => {
@@ -99,20 +84,7 @@ const LoveChat = () => {
           ))}
         </AnimatePresence>
 
-        {isTyping && (
-          <motion.div className="flex justify-start" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <div className="glass-card rounded-2xl rounded-bl-md px-4 py-3 flex gap-1">
-              {[0, 1, 2].map(i => (
-                <motion.div
-                  key={i}
-                  className="h-2 w-2 rounded-full bg-muted-foreground/50"
-                  animate={{ y: [0, -6, 0] }}
-                  transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
-                />
-              ))}
-            </div>
-          </motion.div>
-        )}
+
       </div>
 
       {/* Quick Sends */}
