@@ -26,7 +26,8 @@ const item = {
 
 const LoveFeed = () => {
   const navigate = useNavigate();
-  const { userName, partnerName, userAvatar, partnerAvatar, togetherDays, userMood, partnerMood, messages, memories } = useApp();
+  const { userName, partnerName, userAvatar, partnerAvatar, userProfilePic, togetherDays, userMood, partnerMood, messages, memories, notifications } = useApp();
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   const getGreeting = () => {
     const h = new Date().getHours();
