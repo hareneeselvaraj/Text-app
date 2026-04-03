@@ -49,6 +49,8 @@ interface AppState {
   partnerName: string;
   userAvatar: number;
   partnerAvatar: number;
+  userProfilePic: string;
+  partnerProfilePic: string;
   loveCode: string;
   togetherDays: number;
   userMood: string;
@@ -57,6 +59,7 @@ interface AppState {
   notes: Note[];
   gifts: Gift[];
   messages: ChatMessage[];
+  notifications: AppNotification[];
   anniversaryDate: string;
   importantDates: { name: string; date: string; notify: boolean }[];
 }
