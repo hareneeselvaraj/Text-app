@@ -1,9 +1,8 @@
-// Scripts for firebase and firebase messaging
+// Firebase messaging service worker for background push notifications
+// Using compat version for service worker compatibility
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
 
-// Initialize the Firebase app in the service worker by passing in the
-// messagingSenderId.
 const firebaseConfig = {
   apiKey: "AIzaSyCbtAsIZqdWkv_iknJz0M9vtZ2BygqSnLo",
   authDomain: "text-app-ad297.firebaseapp.com",
@@ -16,19 +15,49 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-// Retrieve an instance of Firebase Messaging so that it can handle background
-// messages.
 const messaging = firebase.messaging();
 
-// Handle background messages
+// Handle background messages (when app is minimized or closed)
 messaging.onBackgroundMessage((payload) => {
-  console.log('[firebase-messaging-sw.js] Received background message ', payload);
-  
-  const notificationTitle = payload.notification?.title || "New Message";
+  console.log('[firebase-messaging-sw.js] Background message received:', payload);
+
+  const title = payload.notification?.title || payload.data?.title || 'LoveNest';
+  const body = payload.notification?.body || payload.data?.body || 'You have a new notification';
+
   const notificationOptions = {
-    body: payload.notification?.body,
-    icon: '/favicon.ico'
+    body: body,
+    icon: '/icons/icon-192.svg',
+    badge: '/icons/icon-192.svg',
+    tag: 'lovenest-' + (payload.data?.type || 'notification'),
+    vibrate: [200, 100, 200],
+    data: {
+      url: payload.data?.url || '/home',
+    },
+    actions: [
+      { action: 'open', title: 'Open LoveNest' }
+    ]
   };
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  self.registration.showNotification(title, notificationOptions);
+});
+
+// Handle notification click — open the app
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const url = event.notification.data?.url || '/home';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // If app is already open, focus it
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          client.navigate(url);
+          return client.focus();
+        }
+      }
+      // Otherwise open a new window
+      return clients.openWindow(url);
+    })
+  );
 });

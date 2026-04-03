@@ -261,6 +261,18 @@ const Settings = () => {
           </div>
         </GlassCard>
 
+        {/* Anniversary / Together Since */}
+        <GlassCard>
+          <p className="text-xs font-medium text-muted-foreground mb-3">Together Since</p>
+          <p className="text-[10px] text-muted-foreground/60 mb-2">This date is used to count your days together on the home screen</p>
+          <input
+            type="date"
+            className="w-full rounded-xl bg-muted/50 px-4 py-3 text-sm text-foreground outline-none"
+            value={anniversaryDate}
+            onChange={e => setAnniversaryDate(e.target.value)}
+          />
+        </GlassCard>
+
         {/* Reminders */}
         <GlassCard>
           <p className="text-xs font-medium text-muted-foreground mb-3">Important Dates</p>

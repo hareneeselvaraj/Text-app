@@ -3,7 +3,7 @@ import { saveState, loadState, clearAllState } from '@/lib/storage';
 import { useAuth } from './AuthContext';
 import { db } from '../lib/firebase';
 import { collection, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { addNoteFb, updateNoteFb, deleteNoteFb, sendMessageFb, toggleHeartMessageFb, updateUserMoodFb } from '../lib/firestore';
+import { addNoteFb, updateNoteFb, deleteNoteFb, sendMessageFb, toggleHeartMessageFb, updateUserMoodFb, updateAnniversaryDateFb, updateImportantDatesFb, sendPushNotification } from '../lib/firestore';
 import { uploadToDrive, downloadFromDrive } from '../lib/driveSync';
 
 export interface Memory { id: string; photo: string; date: string; caption: string; likes: number; timestamp?: any; }
@@ -213,6 +213,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           partnerMood: pMood,
           userMood: uMood,
           anniversaryDate: data.anniversaryDate || s.anniversaryDate,
+          importantDates: data.importantDates || s.importantDates,
         }));
       }
     });
@@ -255,8 +256,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const setUserMood = useCallback((mood: string) => {
     setState(s => ({ ...s, userMood: mood }));
-    if (state.loveCode && currentUser) updateUserMoodFb(state.loveCode, currentUser.uid, mood).catch(console.error);
-  }, [state.loveCode, currentUser]);
+    if (state.loveCode && currentUser) {
+      updateUserMoodFb(state.loveCode, currentUser.uid, mood).catch(console.error);
+      // Send push notification to partner about mood change
+      const moodLabels: Record<string, string> = {
+        '\u{1F60A}': 'Happy', '\u{1F970}': 'Loved', '\u{1F929}': 'Excited', '\u{1F60C}': 'Calm',
+        '\u{1F614}': 'Sad', '\u{1F634}': 'Tired', '\u{1F630}': 'Anxious', '\u{1F624}': 'Angry',
+      };
+      const moodLabel = moodLabels[mood] || 'something';
+      sendPushNotification(
+        state.loveCode,
+        currentUser.uid,
+        state.userName || 'Your partner',
+        `${state.userName || 'Your partner'} is feeling ${moodLabel} ${mood}`,
+        `Tap to check on them`,
+        'mood'
+      ).catch(console.error);
+    }
+  }, [state.loveCode, currentUser, state.userName]);
 
   const setUserProfilePic = useCallback((pic: string) => setState(s => ({ ...s, userProfilePic: pic })), []);
 
@@ -317,9 +334,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ...s, notifications: s.notifications.map(n => ({ ...n, read: true }))
   })), []);
   
-  const setAnniversaryDate = useCallback((date: string) => setState(s => ({ ...s, anniversaryDate: date })), []);
-  const addImportantDate = useCallback((d: { name: string; date: string; notify: boolean }) =>
-    setState(s => ({ ...s, importantDates: [...s.importantDates, d] })), []);
+  const setAnniversaryDate = useCallback((date: string) => {
+    setState(s => ({ ...s, anniversaryDate: date }));
+    if (state.loveCode) updateAnniversaryDateFb(state.loveCode, date).catch(console.error);
+  }, [state.loveCode]);
+
+  const addImportantDate = useCallback((d: { name: string; date: string; notify: boolean }) => {
+    setState(s => {
+      const newDates = [...s.importantDates, d];
+      if (state.loveCode) updateImportantDatesFb(state.loveCode, newDates).catch(console.error);
+      return { ...s, importantDates: newDates };
+    });
+  }, [state.loveCode]);
 
   const logout = useCallback(() => {
     clearAllState().catch(() => {});

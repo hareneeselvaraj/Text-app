@@ -103,3 +103,67 @@ export const deleteNoteFb = async (code: string, id: string) => {
   const noteRef = doc(db, 'nests', code, 'notes', id);
   await deleteDoc(noteRef);
 };
+
+// ─── FCM Token Management ────────────────────────────────────
+
+export const saveFcmToken = async (code: string, uid: string, token: string) => {
+  const nestRef = doc(db, 'nests', code);
+  await setDoc(nestRef, {
+    users: {
+      [uid]: { fcmToken: token }
+    }
+  }, { merge: true });
+};
+
+export const getPartnerFcmToken = async (code: string, uid: string): Promise<string | null> => {
+  const nestRef = doc(db, 'nests', code);
+  const snap = await getDoc(nestRef);
+  if (!snap.exists()) return null;
+
+  const data = snap.data();
+  const partnerId = Object.keys(data.users || {}).find(k => k !== uid);
+  if (!partnerId) return null;
+
+  return data.users[partnerId]?.fcmToken || null;
+};
+
+// ─── Push Notification via Firestore (queued for Cloud Function) ─
+
+/**
+ * Writes a notification request to a Firestore collection.
+ * A Cloud Function (or the partner's client) picks these up and sends FCM push.
+ *
+ * For client-side only (no Cloud Functions), we write to a 'pendingNotifications'
+ * subcollection that the partner's client listens to.
+ */
+export const sendPushNotification = async (
+  code: string,
+  fromUid: string,
+  fromName: string,
+  title: string,
+  body: string,
+  type: 'mood' | 'message' | 'love' | 'reminder' = 'love'
+) => {
+  const notifRef = collection(db, 'nests', code, 'pendingNotifications');
+  await addDoc(notifRef, {
+    fromUid,
+    fromName,
+    title,
+    body,
+    type,
+    timestamp: serverTimestamp(),
+    read: false,
+  });
+};
+
+// ─── Anniversary Date Sync ───────────────────────────────────
+
+export const updateAnniversaryDateFb = async (code: string, date: string) => {
+  const nestRef = doc(db, 'nests', code);
+  await setDoc(nestRef, { anniversaryDate: date }, { merge: true });
+};
+
+export const updateImportantDatesFb = async (code: string, dates: { name: string; date: string; notify: boolean }[]) => {
+  const nestRef = doc(db, 'nests', code);
+  await setDoc(nestRef, { importantDates: dates }, { merge: true });
+};
