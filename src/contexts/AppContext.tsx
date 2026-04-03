@@ -33,12 +33,24 @@ export interface ChatMessage {
   hearted: boolean;
 }
 
+export interface AppNotification {
+  id: string;
+  type: 'love' | 'reminder' | 'date' | 'reaction';
+  title: string;
+  message: string;
+  emoji: string;
+  timestamp: Date;
+  read: boolean;
+}
+
 interface AppState {
   isAuthenticated: boolean;
   userName: string;
   partnerName: string;
   userAvatar: number;
   partnerAvatar: number;
+  userProfilePic: string;
+  partnerProfilePic: string;
   loveCode: string;
   togetherDays: number;
   userMood: string;
@@ -47,6 +59,7 @@ interface AppState {
   notes: Note[];
   gifts: Gift[];
   messages: ChatMessage[];
+  notifications: AppNotification[];
   anniversaryDate: string;
   importantDates: { name: string; date: string; notify: boolean }[];
 }
@@ -54,6 +67,7 @@ interface AppState {
 interface AppContextType extends AppState {
   setAuth: (name: string, avatar: number, code: string) => void;
   setUserMood: (mood: string) => void;
+  setUserProfilePic: (pic: string) => void;
   addMemory: (memory: Memory) => void;
   addNote: (note: Note) => void;
   updateNote: (note: Note) => void;
@@ -63,6 +77,9 @@ interface AppContextType extends AppState {
   deleteGift: (id: string) => void;
   addMessage: (msg: ChatMessage) => void;
   toggleHeart: (id: string) => void;
+  addNotification: (n: AppNotification) => void;
+  markNotificationRead: (id: string) => void;
+  markAllNotificationsRead: () => void;
   setAnniversaryDate: (date: string) => void;
   addImportantDate: (d: { name: string; date: string; notify: boolean }) => void;
   logout: () => void;
@@ -85,6 +102,13 @@ const defaultNotes: Note[] = [
   { id: '2', title: 'Grocery list', content: 'Avocados, pasta, wine', category: 'grocery', createdBy: 'partner', timestamp: new Date().toISOString() },
 ];
 
+const defaultNotifications: AppNotification[] = [
+  { id: '1', type: 'love', title: 'Alex sent a love note', message: 'Miss you 💕', emoji: '💗', timestamp: new Date(Date.now() - 3600000), read: false },
+  { id: '2', type: 'date', title: 'Anniversary coming up!', message: 'Your anniversary is in 3 days 🎉', emoji: '📅', timestamp: new Date(Date.now() - 7200000), read: false },
+  { id: '3', type: 'reaction', title: 'Alex hearted your message', message: '"Can\'t wait! Miss you already 💕"', emoji: '❤️', timestamp: new Date(Date.now() - 10800000), read: true },
+  { id: '4', type: 'reminder', title: 'Daily check-in', message: 'How are you feeling today?', emoji: '🔔', timestamp: new Date(Date.now() - 86400000), read: true },
+];
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -94,6 +118,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     partnerName: 'Alex',
     userAvatar: 0,
     partnerAvatar: 3,
+    userProfilePic: '',
+    partnerProfilePic: '',
     loveCode: '',
     togetherDays: 247,
     userMood: '🥰',
@@ -102,6 +128,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     notes: defaultNotes,
     gifts: [],
     messages: defaultMessages,
+    notifications: defaultNotifications,
     anniversaryDate: '2024-08-01',
     importantDates: [{ name: 'Anniversary', date: '2024-08-01', notify: true }],
   });
@@ -110,6 +137,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setState(s => ({ ...s, isAuthenticated: true, userName: name, userAvatar: avatar, loveCode: code }));
 
   const setUserMood = (mood: string) => setState(s => ({ ...s, userMood: mood }));
+  const setUserProfilePic = (pic: string) => setState(s => ({ ...s, userProfilePic: pic }));
 
   const addMemory = (m: Memory) => setState(s => ({ ...s, memories: [m, ...s.memories] }));
   const addNote = (n: Note) => setState(s => ({ ...s, notes: [n, ...s.notes] }));
@@ -122,16 +150,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const toggleHeart = (id: string) => setState(s => ({
     ...s, messages: s.messages.map(m => m.id === id ? { ...m, hearted: !m.hearted } : m)
   }));
+  const addNotification = (n: AppNotification) => setState(s => ({ ...s, notifications: [n, ...s.notifications] }));
+  const markNotificationRead = (id: string) => setState(s => ({
+    ...s, notifications: s.notifications.map(n => n.id === id ? { ...n, read: true } : n)
+  }));
+  const markAllNotificationsRead = () => setState(s => ({
+    ...s, notifications: s.notifications.map(n => ({ ...n, read: true }))
+  }));
   const setAnniversaryDate = (date: string) => setState(s => ({ ...s, anniversaryDate: date }));
   const addImportantDate = (d: { name: string; date: string; notify: boolean }) =>
     setState(s => ({ ...s, importantDates: [...s.importantDates, d] }));
-  const logout = () => setState(s => ({ ...s, isAuthenticated: false, userName: '', loveCode: '' }));
+  const logout = () => setState(s => ({ ...s, isAuthenticated: false, userName: '', loveCode: '', userProfilePic: '' }));
 
   return (
     <AppContext.Provider value={{
-      ...state, setAuth, setUserMood, addMemory, addNote, updateNote, deleteNote,
-      addGift, updateGift, deleteGift, addMessage, toggleHeart, setAnniversaryDate,
-      addImportantDate, logout,
+      ...state, setAuth, setUserMood, setUserProfilePic, addMemory, addNote, updateNote, deleteNote,
+      addGift, updateGift, deleteGift, addMessage, toggleHeart,
+      addNotification, markNotificationRead, markAllNotificationsRead,
+      setAnniversaryDate, addImportantDate, logout,
     }}>
       {children}
     </AppContext.Provider>

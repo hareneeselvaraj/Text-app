@@ -1,20 +1,31 @@
 import { motion } from 'framer-motion';
-import { ArrowLeft, Moon, Sun, Gift, LogOut, Calendar, Plus, Heart } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Gift, LogOut, Calendar, Plus, Heart, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import GlassCard from '@/components/GlassCard';
 import AvatarPair from '@/components/AvatarPair';
+import { avatarEmojis } from '@/components/AvatarPair';
 import { useApp } from '@/contexts/AppContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 const Settings = () => {
   const navigate = useNavigate();
-  const { userName, partnerName, userAvatar, partnerAvatar, loveCode, anniversaryDate, importantDates, setAnniversaryDate, addImportantDate, logout } = useApp();
+  const { userName, partnerName, userAvatar, partnerAvatar, userProfilePic, loveCode, anniversaryDate, importantDates, setAnniversaryDate, addImportantDate, setUserProfilePic, logout } = useApp();
   const { theme, toggleTheme } = useTheme();
   const [showLeave, setShowLeave] = useState(false);
   const [newDateName, setNewDateName] = useState('');
   const [newDate, setNewDate] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) return;
+    const reader = new FileReader();
+    reader.onloadend = () => setUserProfilePic(reader.result as string);
+    reader.readAsDataURL(file);
+  };
 
   const handleLogout = () => { logout(); navigate('/'); };
 
@@ -28,10 +39,25 @@ const Settings = () => {
       <div className="space-y-4">
         {/* Profile */}
         <GlassCard className="flex items-center gap-4">
-          <AvatarPair userAvatar={userAvatar} partnerAvatar={partnerAvatar} size="lg" />
+          <motion.button
+            className="relative h-14 w-14 rounded-full bg-muted/50 flex items-center justify-center overflow-hidden ring-2 ring-border/30 shrink-0"
+            whileTap={{ scale: 0.95 }}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {userProfilePic ? (
+              <img src={userProfilePic} alt="Profile" className="h-full w-full object-cover" />
+            ) : (
+              <span className="text-2xl">{avatarEmojis[userAvatar]}</span>
+            )}
+            <div className="absolute bottom-0 right-0 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+              <Camera className="h-2.5 w-2.5 text-primary-foreground" />
+            </div>
+          </motion.button>
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
           <div>
             <p className="text-sm font-semibold text-foreground">{userName || 'You'} & {partnerName}</p>
             <p className="text-xs text-muted-foreground mt-0.5">Love Code: <span className="font-mono tracking-wider text-primary">{loveCode || 'N/A'}</span></p>
+            <p className="text-[10px] text-muted-foreground/60 mt-0.5">Tap photo to change</p>
           </div>
         </GlassCard>
 

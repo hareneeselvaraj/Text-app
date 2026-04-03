@@ -14,6 +14,7 @@ import Notes from "./pages/Notes";
 import Gifts from "./pages/Gifts";
 import Settings from "./pages/Settings";
 import MoodSelector from "./pages/MoodSelector";
+import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
                 <Route path="/gifts" element={<Gifts />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/mood" element={<MoodSelector />} />
+                <Route path="/notifications" element={<Notifications />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </MobileShell>

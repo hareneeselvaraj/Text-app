@@ -26,7 +26,8 @@ const item = {
 
 const LoveFeed = () => {
   const navigate = useNavigate();
-  const { userName, partnerName, userAvatar, partnerAvatar, togetherDays, userMood, partnerMood, messages, memories } = useApp();
+  const { userName, partnerName, userAvatar, partnerAvatar, userProfilePic, togetherDays, userMood, partnerMood, messages, memories, notifications } = useApp();
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   const getGreeting = () => {
     const h = new Date().getHours();
@@ -53,11 +54,16 @@ const LoveFeed = () => {
           </div>
           <div className="flex items-center gap-2">
             <motion.button
-              className="h-9 w-9 rounded-full glass-card flex items-center justify-center"
+              className="h-9 w-9 rounded-full glass-card flex items-center justify-center relative"
               whileTap={{ scale: 0.9 }}
-              onClick={() => toast('No new notifications 💌')}
+              onClick={() => navigate('/notifications')}
             >
               <Bell className="h-4 w-4 text-muted-foreground" />
+              {unreadCount > 0 && (
+                <div className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-accent text-[9px] font-bold text-accent-foreground flex items-center justify-center">
+                  {unreadCount}
+                </div>
+              )}
             </motion.button>
             <motion.button
               className="h-9 w-9 rounded-full glass-card flex items-center justify-center"
@@ -67,8 +73,12 @@ const LoveFeed = () => {
               <Settings className="h-4 w-4 text-muted-foreground" />
             </motion.button>
             <div className="relative">
-              <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center text-xl ring-2 ring-background">
-                {avatarEmojis[partnerAvatar]}
+              <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center text-xl ring-2 ring-background overflow-hidden">
+                {userProfilePic ? (
+                  <img src={userProfilePic} alt="You" className="h-full w-full object-cover" />
+                ) : (
+                  avatarEmojis[userAvatar]
+                )}
               </div>
               <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-background" />
             </div>
