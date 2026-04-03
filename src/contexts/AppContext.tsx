@@ -320,10 +320,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setState(s => ({ ...s, gifts: s.gifts.filter(x => x.id !== id) }));
   }, []);
 
-  // Messages — Firestore shared
+  // Messages — Firestore shared + push notification to partner
   const addMessage = useCallback((msg: ChatMessage) => {
-    if (state.loveCode && currentUser) sendMessageFb(state.loveCode, currentUser.uid, msg.text).catch(console.error);
-  }, [state.loveCode, currentUser]);
+    if (state.loveCode && currentUser) {
+      sendMessageFb(state.loveCode, currentUser.uid, msg.text).catch(console.error);
+      // Notify partner about the new message
+      sendPushNotification(
+        state.loveCode,
+        currentUser.uid,
+        state.userName || 'Your partner',
+        `${state.userName || 'Your partner'}`,
+        msg.text,
+        'message'
+      ).catch(console.error);
+    }
+  }, [state.loveCode, currentUser, state.userName]);
 
   const toggleHeart = useCallback((id: string) => {
     const msg = state.messages.find(m => m.id === id);

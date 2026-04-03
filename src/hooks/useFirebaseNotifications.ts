@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { getToken, onMessage } from 'firebase/messaging';
 import { messaging, db } from '../lib/firebase';
 import { saveFcmToken } from '../lib/firestore';
-import { collection, onSnapshot, query, orderBy, where, deleteDoc, doc } from 'firebase/firestore';
+import { collection, onSnapshot, query, deleteDoc, doc, Timestamp } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { useApp } from '../contexts/AppContext';
 import { toast } from 'sonner';
@@ -29,7 +29,6 @@ export const useFirebaseNotifications = () => {
         let swRegistration: ServiceWorkerRegistration | undefined;
         if ('serviceWorker' in navigator) {
           swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-          // Wait for the service worker to be active
           await navigator.serviceWorker.ready;
         }
 
@@ -42,8 +41,6 @@ export const useFirebaseNotifications = () => {
           console.log('FCM Token obtained');
           setToken(currentToken);
           hasRegistered.current = true;
-
-          // Save token to Firestore so partner can find it
           await saveFcmToken(loveCode, currentUser.uid, currentToken);
           console.log('FCM token saved to Firestore');
         }
@@ -69,60 +66,77 @@ export const useFirebaseNotifications = () => {
     return () => unsubscribe();
   }, []);
 
-  // 3. Listen for pendingNotifications from partner (Firestore-based push)
+  // 3. Listen for ALL pendingNotifications (simple query, no composite index needed)
+  //    Filter client-side to skip own notifications
   useEffect(() => {
     if (!currentUser || !loveCode) return;
 
-    const notifQ = query(
-      collection(db, 'nests', loveCode, 'pendingNotifications'),
-      where('fromUid', '!=', currentUser.uid),
-      orderBy('fromUid'),
-      orderBy('timestamp', 'desc')
-    );
+    // Simple query — no compound index required
+    const notifQ = query(collection(db, 'nests', loveCode, 'pendingNotifications'));
 
     const unsubscribe = onSnapshot(notifQ, (snap) => {
       snap.docChanges().forEach(async (change) => {
         if (change.type === 'added') {
           const data = change.doc.data();
 
-          // Show as in-app notification
+          // Skip notifications sent by myself
+          if (data.fromUid === currentUser.uid) {
+            // Clean up own notification docs
+            try {
+              await deleteDoc(doc(db, 'nests', loveCode, 'pendingNotifications', change.doc.id));
+            } catch { /* ignore */ }
+            return;
+          }
+
+          // Add to in-app notification list
           addNotification({
             id: change.doc.id,
             type: data.type || 'love',
             title: data.title || 'LoveNest',
             message: data.body || '',
-            emoji: data.type === 'mood' ? '🎭' : '💕',
+            emoji: data.type === 'mood' ? '🎭' : data.type === 'message' ? '💬' : '💕',
             timestamp: data.timestamp?.toDate?.() || new Date(),
             read: false,
           });
 
-          // Show system notification if app is in foreground but user might miss it
+          // Always show toast when app is visible
           if (document.visibilityState === 'visible') {
-            toast(data.title, { description: data.body });
+            toast(data.title || 'LoveNest', { description: data.body });
           }
 
-          // Show browser push notification if page is hidden (background/minimized)
-          if (document.visibilityState === 'hidden' && Notification.permission === 'granted') {
-            const registration = await navigator.serviceWorker?.ready;
-            if (registration) {
-              registration.showNotification(data.title || 'LoveNest', {
-                body: data.body || '',
-                icon: '/icons/icon-192.svg',
-                badge: '/icons/icon-192.svg',
-                tag: `lovenest-${data.type}-${change.doc.id}`,
-                vibrate: [200, 100, 200],
-              });
+          // Show system push notification (works both foreground and background)
+          if (Notification.permission === 'granted') {
+            try {
+              const registration = await navigator.serviceWorker?.ready;
+              if (registration) {
+                await registration.showNotification(data.title || 'LoveNest', {
+                  body: data.body || '',
+                  icon: '/icons/icon-192.svg',
+                  badge: '/icons/icon-192.svg',
+                  tag: `lovenest-${change.doc.id}`,
+                  renotify: true,
+                } as NotificationOptions);
+              }
+            } catch (e) {
+              // Fallback: use Notification API directly
+              try {
+                new Notification(data.title || 'LoveNest', {
+                  body: data.body || '',
+                  icon: '/icons/icon-192.svg',
+                  tag: `lovenest-${change.doc.id}`,
+                });
+              } catch { /* ignore */ }
             }
           }
 
-          // Clean up — delete the notification doc after processing
+          // Clean up the notification doc after processing
           try {
             await deleteDoc(doc(db, 'nests', loveCode, 'pendingNotifications', change.doc.id));
-          } catch {
-            // Ignore cleanup errors
-          }
+          } catch { /* ignore */ }
         }
       });
+    }, (error) => {
+      console.error('pendingNotifications listener error:', error);
     });
 
     return () => unsubscribe();
