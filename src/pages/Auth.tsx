@@ -34,12 +34,14 @@ const Auth = () => {
     if (!name.trim()) return;
     const code = generateCode();
     setAuth(name, avatar, code);
+    if (profilePic) setUserProfilePic(profilePic);
     navigate('/home');
   };
 
   const handleJoin = () => {
     if (!name.trim() || joinCode.length < 6) return;
     setAuth(name, avatar, joinCode);
+    if (profilePic) setUserProfilePic(profilePic);
     navigate('/home');
   };
 
