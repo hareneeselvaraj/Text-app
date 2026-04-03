@@ -23,7 +23,6 @@ const App = () => (
     <ThemeProvider>
       <AppProvider>
         <TooltipProvider>
-          <Sonner />
           <BrowserRouter>
             <MobileShell>
               <Routes>
