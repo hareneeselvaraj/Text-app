@@ -66,22 +66,17 @@ const LoveFeed = () => {
               )}
             </motion.button>
             <motion.button
-              className="h-9 w-9 rounded-full glass-card flex items-center justify-center"
+              className="relative h-10 w-10 rounded-full bg-accent/5 flex items-center justify-center text-xl ring-2 ring-background/50 overflow-hidden hover:ring-primary/40 transition-all shadow-sm"
               whileTap={{ scale: 0.9 }}
               onClick={() => navigate('/settings')}
             >
-              <Settings className="h-4 w-4 text-muted-foreground" />
+              {userProfilePic ? (
+                <img src={userProfilePic} alt="You" className="h-full w-full object-cover" />
+              ) : (
+                avatarEmojis[userAvatar]
+              )}
+              <div className="absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full bg-emerald-400 border-2 border-background shadow-sm" />
             </motion.button>
-            <div className="relative">
-              <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center text-xl ring-2 ring-background overflow-hidden">
-                {userProfilePic ? (
-                  <img src={userProfilePic} alt="You" className="h-full w-full object-cover" />
-                ) : (
-                  avatarEmojis[userAvatar]
-                )}
-              </div>
-              <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-background" />
-            </div>
           </div>
         </motion.div>
 
