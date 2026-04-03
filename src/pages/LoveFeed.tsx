@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Send } from 'lucide-react';
+import { Heart, Send, Bell, Settings } from 'lucide-react';
 import GlassCard from '@/components/GlassCard';
 import AvatarPair, { avatarEmojis } from '@/components/AvatarPair';
 import HeartParticles from '@/components/HeartParticles';
@@ -52,6 +52,20 @@ const LoveFeed = () => {
             <p className="text-sm text-muted-foreground mt-0.5">Your nest awaits</p>
           </div>
           <div className="flex items-center gap-2">
+            <motion.button
+              className="h-9 w-9 rounded-full glass-card flex items-center justify-center"
+              whileTap={{ scale: 0.9 }}
+              onClick={() => toast('No new notifications 💌')}
+            >
+              <Bell className="h-4 w-4 text-muted-foreground" />
+            </motion.button>
+            <motion.button
+              className="h-9 w-9 rounded-full glass-card flex items-center justify-center"
+              whileTap={{ scale: 0.9 }}
+              onClick={() => navigate('/settings')}
+            >
+              <Settings className="h-4 w-4 text-muted-foreground" />
+            </motion.button>
             <div className="relative">
               <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center text-xl ring-2 ring-background">
                 {avatarEmojis[partnerAvatar]}
