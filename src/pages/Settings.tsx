@@ -1,12 +1,13 @@
 import { motion } from 'framer-motion';
-import { ArrowLeft, Moon, Sun, Gift, LogOut, Calendar, Plus, Heart } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Gift, LogOut, Calendar, Plus, Heart, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import GlassCard from '@/components/GlassCard';
 import AvatarPair from '@/components/AvatarPair';
+import { avatarEmojis } from '@/components/AvatarPair';
 import { useApp } from '@/contexts/AppContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 const Settings = () => {
   const navigate = useNavigate();
